@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+:root {
+  /* Canadian palette: maple red accent, navy ink, snow backgrounds */
+  --ink: #0b1f3a;
+  --ink-soft: #1a3358;
+  --paper: #ffffff;
+  --paper-deep: #eef2f7;
+  --teal: #c8102e;
+  --teal-bright: #e11d48;
+  --teal-muted: #c8102e14;
+  --cream: #f5f8fc;
+  --muted: #4a5b73;
+  --line: #d7e0ea;
+  --white: #ffffff;
+  --danger: #b91c1c;
+  --maple: #c8102e;
+  --navy: #0b1f3a;
+  --snow: #f5f8fc;
+  --background: var(--cream);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-teal: var(--teal);
+  --color-teal-bright: var(--teal-bright);
+  --color-teal-muted: var(--teal-muted);
+  --color-cream: var(--cream);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-danger: var(--danger);
+  --color-maple: var(--maple);
+  --color-navy: var(--navy);
+  --color-snow: var(--snow);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-manrope);
+}
+
+body {
+  background:
+    radial-gradient(ellipse 120% 80% at 100% -20%, #c8102e12, transparent 50%),
+    radial-gradient(ellipse 90% 60% at -10% 100%, #0b1f3a0a, transparent 45%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.65s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.55s ease-out both;
+}
+
+.animate-delay-1 {
+  animation-delay: 0.1s;
+}
+
+.animate-delay-2 {
+  animation-delay: 0.2s;
+}
+
+.animate-delay-3 {
+  animation-delay: 0.3s;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal);
+  color: #fff;
+  font-weight: 600;
+  min-height: 2.75rem;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--teal-bright);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(11, 31, 58, 0.18);
+  background: #fff;
+  color: var(--ink);
+  font-weight: 600;
+  min-height: 2.75rem;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+.maple-divider {
+  height: 3px;
+  width: 3rem;
+  background: linear-gradient(90deg, var(--maple), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-fade-in {
+    animation: none;
+  }
+}
