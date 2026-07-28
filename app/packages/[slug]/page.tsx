@@ -3,6 +3,10 @@ import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ButtonLink";
 import { PackageTemplateSection } from "@/components/templates/PackageTemplateSection";
 import { getPackageBySlug, listPackages } from "@/lib/admin/store";
+import {
+  formatLocalizedAmount,
+  getGeoPricing,
+} from "@/lib/geo-pricing";
 import { defaultPackages } from "@/lib/packages";
 import { packageWhatsappMessage, whatsappLink } from "@/lib/whatsapp";
 
@@ -12,6 +16,7 @@ type Props = {
 };
 
 export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   try {
@@ -38,8 +43,13 @@ export default async function PackageDetailPage({
 }: Props) {
   const { slug } = await params;
   const { color } = await searchParams;
-  const pkg = await getPackageBySlug(slug);
+  const [pkg, pricing] = await Promise.all([
+    getPackageBySlug(slug),
+    getGeoPricing(),
+  ]);
   if (!pkg) notFound();
+
+  const local = formatLocalizedAmount(pkg.quoteAmount, pricing.currency);
 
   const checkoutHref = color
     ? `/packages/${pkg.slug}/checkout?color=${encodeURIComponent(color)}`
@@ -61,8 +71,17 @@ export default async function PackageDetailPage({
           {pkg.tagline}
         </p>
         <p className="mt-4 text-sm font-semibold text-ink">
-          {pkg.priceLabel} · {pkg.timeline}
+          {local.display}
+          {pricing.isConverted
+            ? ` · ~R ${Math.round(pkg.quoteAmount).toLocaleString("en-ZA")}`
+            : ""}{" "}
+          · {pkg.timeline}
           {pkg.region ? ` · ${pkg.region}` : ""}
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          {pricing.isConverted
+            ? `Approx. ${pricing.currency.code} for visitors in ${pricing.country}. Final quote confirmed before payment.`
+            : "Quote baseline. Final quote confirmed before payment."}
         </p>
         <div className="maple-divider mt-5" />
 

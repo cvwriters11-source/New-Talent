@@ -5,6 +5,19 @@ import {
   defaultPackages,
   type CareerPackage,
 } from "@/lib/packages";
+import {
+  sbAddCheckoutOrder,
+  sbDeletePackage,
+  sbGetPackage,
+  sbGetPopup,
+  sbListCustomers,
+  sbListOrders,
+  sbListPackages,
+  sbUpdateOrderStatus,
+  sbUpdatePopup,
+  sbUpsertPackage,
+} from "@/lib/admin/supabase-data";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
 
 export { formatRand };
 export type { CareerPackage };
@@ -273,6 +286,18 @@ export async function getStore(): Promise<AdminStore> {
   if (globalThis.__tcAdminStore) {
     ensurePackages(globalThis.__tcAdminStore);
     ensurePopup(globalThis.__tcAdminStore);
+    if (isSupabaseConfigured()) {
+      const [orders, customers, packages, popup] = await Promise.all([
+        sbListOrders(),
+        sbListCustomers(),
+        sbListPackages(true),
+        sbGetPopup(),
+      ]);
+      if (orders) globalThis.__tcAdminStore.orders = orders;
+      if (customers) globalThis.__tcAdminStore.customers = customers;
+      if (packages) globalThis.__tcAdminStore.packages = packages;
+      if (popup) globalThis.__tcAdminStore.popup = popup;
+    }
     globalThis.__tcAdminStore.notifications = getAccurateNotificationCount(
       globalThis.__tcAdminStore,
     );
@@ -295,6 +320,20 @@ export async function getStore(): Promise<AdminStore> {
   }
   ensurePackages(store);
   ensurePopup(store);
+
+  if (isSupabaseConfigured()) {
+    const [orders, customers, packages, popup] = await Promise.all([
+      sbListOrders(),
+      sbListCustomers(),
+      sbListPackages(true),
+      sbGetPopup(),
+    ]);
+    if (orders) store.orders = orders;
+    if (customers) store.customers = customers;
+    if (packages) store.packages = packages;
+    if (popup) store.popup = popup;
+  }
+
   store.notifications = getAccurateNotificationCount(store);
   globalThis.__tcAdminStore = store;
   await writeToDisk(store);
@@ -302,6 +341,11 @@ export async function getStore(): Promise<AdminStore> {
 }
 
 export async function listPackages(options?: { includeInactive?: boolean }) {
+  const fromSb = await sbListPackages(Boolean(options?.includeInactive));
+  if (fromSb) {
+    if (options?.includeInactive) return fromSb;
+    return fromSb.filter((pkg) => pkg.active !== false);
+  }
   const store = await getStore();
   ensurePackages(store);
   if (options?.includeInactive) return store.packages;
@@ -312,6 +356,10 @@ export async function getPackageBySlug(
   slug: string,
   options?: { includeInactive?: boolean },
 ) {
+  const fromSb = await sbGetPackage(slug, Boolean(options?.includeInactive));
+  if (fromSb) return fromSb;
+  if (fromSb === undefined) return undefined;
+
   const store = await getStore();
   ensurePackages(store);
   const pkg = store.packages.find((p) => p.slug === slug);
@@ -324,13 +372,27 @@ export async function upsertPackage(
   input: CareerPackage,
   options?: { previousSlug?: string },
 ) {
-  const store = await getStore();
-  ensurePackages(store);
   const next = normalizePackage(input);
   if (!next.slug || !next.name.trim()) {
     throw new Error("Package name and slug are required.");
   }
 
+  const fromSb = await sbUpsertPackage(next, options?.previousSlug);
+  if (fromSb) {
+    if (globalThis.__tcAdminStore) {
+      ensurePackages(globalThis.__tcAdminStore);
+      const previousSlug = options?.previousSlug || next.slug;
+      const idx = globalThis.__tcAdminStore.packages.findIndex(
+        (p) => p.slug === previousSlug || p.slug === next.slug,
+      );
+      if (idx >= 0) globalThis.__tcAdminStore.packages[idx] = fromSb;
+      else globalThis.__tcAdminStore.packages.push(fromSb);
+    }
+    return fromSb;
+  }
+
+  const store = await getStore();
+  ensurePackages(store);
   const previousSlug = options?.previousSlug || next.slug;
   const existingIndex = store.packages.findIndex((p) => p.slug === previousSlug);
   const slugTaken = store.packages.some(
@@ -351,6 +413,14 @@ export async function upsertPackage(
 }
 
 export async function deletePackage(slug: string) {
+  const fromSb = await sbDeletePackage(slug);
+  if (fromSb !== null) {
+    if (globalThis.__tcAdminStore) {
+      globalThis.__tcAdminStore.packages =
+        globalThis.__tcAdminStore.packages.filter((p) => p.slug !== slug);
+    }
+    return fromSb;
+  }
   const store = await getStore();
   ensurePackages(store);
   const before = store.packages.length;
@@ -361,6 +431,8 @@ export async function deletePackage(slug: string) {
 }
 
 export async function getSitePopup() {
+  const fromSb = await sbGetPopup();
+  if (fromSb) return fromSb;
   const store = await getStore();
   ensurePopup(store);
   return store.popup;
@@ -389,9 +461,11 @@ export async function updateSitePopup(
   } else {
     next.imageUrl = store.popup.imageUrl || null;
   }
-  store.popup = next;
+
+  const fromSb = await sbUpdatePopup(next);
+  store.popup = fromSb || next;
   await saveStore(store);
-  return next;
+  return store.popup;
 }
 
 export async function saveStore(store: AdminStore) {
@@ -418,7 +492,9 @@ export async function addCheckoutOrder(input: {
 }) {
   const store = await getStore();
   ensurePackages(store);
-  const pkg = store.packages.find((p) => p.slug === input.packageSlug);
+  const pkg =
+    (await sbGetPackage(input.packageSlug, true)) ||
+    store.packages.find((p) => p.slug === input.packageSlug);
   const id = `ord_${Date.now()}`;
   const order: AdminOrder = {
     id,
@@ -434,10 +510,20 @@ export async function addCheckoutOrder(input: {
     cvColor: input.cvColor,
     cvUrl: input.cvUrl,
     pictureUrl: input.pictureUrl,
-    amount: packageAmount(input.packageSlug, store.packages),
+    amount: packageAmount(
+      input.packageSlug,
+      pkg ? [pkg, ...store.packages] : store.packages,
+    ),
     status: "pending",
     assignedWriter: store.writers[0]?.name || null,
   };
+
+  const savedToSb = await sbAddCheckoutOrder(order, {
+    name: `${input.firstName} ${input.surname}`,
+    email: input.email,
+    whatsapp: input.whatsapp,
+    country: input.country,
+  });
 
   store.orders.unshift(order);
 
@@ -459,11 +545,26 @@ export async function addCheckoutOrder(input: {
   }
 
   store.notifications = store.orders.filter((o) => o.status === "pending").length;
-  await saveStore(store);
+  if (!savedToSb) await saveStore(store);
+  else {
+    globalThis.__tcAdminStore = store;
+  }
   return order;
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus) {
+  const fromSb = await sbUpdateOrderStatus(id, status);
+  if (fromSb) {
+    if (globalThis.__tcAdminStore) {
+      const idx = globalThis.__tcAdminStore.orders.findIndex((o) => o.id === id);
+      if (idx >= 0) globalThis.__tcAdminStore.orders[idx] = fromSb;
+      globalThis.__tcAdminStore.notifications = getAccurateNotificationCount(
+        globalThis.__tcAdminStore,
+      );
+    }
+    return fromSb;
+  }
+
   const store = await getStore();
   const order = store.orders.find((o) => o.id === id);
   if (!order) return null;
