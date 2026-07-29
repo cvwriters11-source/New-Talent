@@ -39,18 +39,33 @@ export default async function JobDetailPage({ params }: Props) {
         >
           ← All jobs
         </Link>
-        <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-teal">
-          {formatType(job.employmentType)}
-        </p>
-        <h1 className="mt-2 text-3xl font-bold text-ink md:text-4xl">
-          {job.title}
-        </h1>
-        <p className="mt-2 text-muted">
-          {job.companyName} · {job.location}
-        </p>
-        {job.salaryLabel ? (
-          <p className="mt-3 text-sm font-semibold text-teal">{job.salaryLabel}</p>
-        ) : null}
+
+        <div className="mt-6 flex items-start gap-4">
+          {job.companyLogoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={job.companyLogoUrl}
+              alt={`${job.companyName} logo`}
+              className="h-16 w-16 shrink-0 border border-line bg-white object-contain p-1"
+            />
+          ) : null}
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal">
+              {formatType(job.employmentType)}
+            </p>
+            <h1 className="mt-2 text-3xl font-bold text-ink md:text-4xl">
+              {job.title}
+            </h1>
+            <p className="mt-2 text-muted">
+              {job.companyName} · {job.location}
+            </p>
+            {job.salaryLabel ? (
+              <p className="mt-3 text-sm font-semibold text-teal">
+                {job.salaryLabel}
+              </p>
+            ) : null}
+          </div>
+        </div>
 
         {mailto ? (
           <a href={mailto} className="btn-primary mt-8 inline-flex px-6 py-3.5 text-sm">

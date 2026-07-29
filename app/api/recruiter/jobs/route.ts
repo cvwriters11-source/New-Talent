@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getRecruiterSession } from "@/lib/recruiter/auth";
 import {
   createJob,
+  getRecruiterById,
   listJobsForRecruiter,
   type EmploymentType,
 } from "@/lib/recruiter/store";
@@ -28,6 +29,28 @@ export async function POST(request: Request) {
   const session = await getRecruiterSession();
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const recruiter = await getRecruiterById(session.id);
+  if (!recruiter) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (recruiter.verificationStatus !== "approved") {
+    return NextResponse.json(
+      {
+        error:
+          recruiter.verificationStatus === "rejected"
+            ? "Your registration was rejected. Contact Talent Crafters for help."
+            : "Your account is awaiting admin verification before you can post jobs.",
+      },
+      { status: 403 },
+    );
+  }
+  if (!recruiter.logoUrl) {
+    return NextResponse.json(
+      { error: "Company logo is required on your profile." },
+      { status: 400 },
+    );
   }
 
   let body: {
@@ -89,6 +112,7 @@ export async function POST(request: Request) {
       requirements,
       salaryLabel,
       contactEmail: session.email,
+      companyLogoUrl: recruiter.logoUrl,
     });
     return NextResponse.json({ job }, { status: 201 });
   } catch (err) {

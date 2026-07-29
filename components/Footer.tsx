@@ -112,14 +112,24 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10 px-5 py-5 text-center sm:px-8">
-        <p className="text-sm font-semibold tracking-wide text-paper/90">
-          {site.signature}
-        </p>
-        <p className="mt-2 text-xs leading-relaxed text-paper/45">
-          © {new Date().getFullYear()} {site.name}. {site.product}. All rights
-          reserved.
-        </p>
+      <div className="border-t border-white/10 px-5 py-5 sm:px-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 sm:flex-row sm:justify-between">
+          <div className="text-center sm:text-left">
+            <p className="text-sm font-semibold tracking-wide text-paper/90">
+              {site.signature}
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-paper/45">
+              © {new Date().getFullYear()} {site.name}. {site.product}. All
+              rights reserved.
+            </p>
+          </div>
+          <Link
+            href="/admin/login"
+            className="text-[11px] text-paper/35 transition hover:text-paper/60"
+          >
+            Admin
+          </Link>
+        </div>
       </div>
     </footer>
   );

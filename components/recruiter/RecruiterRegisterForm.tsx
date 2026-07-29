@@ -8,24 +8,25 @@ export function RecruiterRegisterForm() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [logoName, setLogoName] = useState("");
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    if (!(data.get("logo") instanceof File) || !(data.get("logo") as File).size) {
+      setError("Company logo is required.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/recruiter/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.get("name"),
-          company: data.get("company"),
-          email: data.get("email"),
-          password: data.get("password"),
-          whatsapp: data.get("whatsapp") || undefined,
-        }),
+        body: data,
       });
       const json = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(json.error || "Registration failed");
@@ -38,7 +39,7 @@ export function RecruiterRegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4" encType="multipart/form-data">
       <div>
         <label htmlFor="name" className="mb-1.5 block text-sm font-semibold text-ink">
           Full name
@@ -64,6 +65,24 @@ export function RecruiterRegisterForm() {
           minLength={2}
           className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
         />
+      </div>
+      <div>
+        <label htmlFor="logo" className="mb-1.5 block text-sm font-semibold text-ink">
+          Company logo
+        </label>
+        <input
+          id="logo"
+          name="logo"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+          required
+          onChange={(e) => setLogoName(e.target.files?.[0]?.name || "")}
+          className="w-full border border-line bg-white px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-teal file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+        />
+        <p className="mt-1 text-xs text-muted">
+          Required. JPG, PNG, or WebP under 2MB. Shown on your job posts.
+          {logoName ? ` Selected: ${logoName}` : ""}
+        </p>
       </div>
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-semibold text-ink">
@@ -104,6 +123,9 @@ export function RecruiterRegisterForm() {
           className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
         />
       </div>
+      <p className="border border-line bg-[#f8fafc] px-3 py-2 text-xs text-muted">
+        After you register, Talent Crafters must verify your account before you can post jobs.
+      </p>
       {error ? (
         <p className="border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">
           {error}

@@ -14,6 +14,7 @@ import {
 
 export type JobStatus = "pending" | "published" | "rejected" | "closed";
 export type EmploymentType = "full-time" | "part-time" | "contract" | "remote";
+export type VerificationStatus = "pending" | "approved" | "rejected";
 
 export type Recruiter = {
   id: string;
@@ -21,6 +22,10 @@ export type Recruiter = {
   email: string;
   company: string;
   whatsapp: string | null;
+  logoUrl: string | null;
+  verificationStatus: VerificationStatus;
+  verifiedAt: string | null;
+  verificationNote: string | null;
   active: boolean;
   createdAt: string;
   lastLoginAt: string | null;
@@ -37,6 +42,7 @@ export type JobPost = {
   requirements: string;
   salaryLabel: string | null;
   contactEmail: string | null;
+  companyLogoUrl: string | null;
   status: JobStatus;
   adminNote: string | null;
   createdAt: string;
@@ -53,6 +59,10 @@ type RecruiterRow = {
   password_hash: string;
   company: string;
   whatsapp: string | null;
+  logo_url: string | null;
+  verification_status: VerificationStatus;
+  verified_at: string | null;
+  verification_note: string | null;
   active: boolean;
   created_at: string;
   last_login_at: string | null;
@@ -69,6 +79,7 @@ type JobRow = {
   requirements: string;
   salary_label: string | null;
   contact_email: string | null;
+  company_logo_url: string | null;
   status: JobStatus;
   admin_note: string | null;
   created_at: string;
@@ -90,6 +101,10 @@ function mapRecruiter(row: RecruiterRow): Recruiter {
     email: row.email,
     company: row.company,
     whatsapp: row.whatsapp,
+    logoUrl: row.logo_url ?? null,
+    verificationStatus: row.verification_status ?? "pending",
+    verifiedAt: row.verified_at ?? null,
+    verificationNote: row.verification_note ?? null,
     active: row.active,
     createdAt: row.created_at,
     lastLoginAt: row.last_login_at,
@@ -108,6 +123,7 @@ function mapJob(row: JobRow): JobPost {
     requirements: row.requirements,
     salaryLabel: row.salary_label,
     contactEmail: row.contact_email ?? null,
+    companyLogoUrl: row.company_logo_url ?? null,
     status: row.status,
     adminNote: row.admin_note,
     createdAt: row.created_at,
@@ -139,13 +155,17 @@ export async function registerRecruiter(input: {
   email: string;
   password: string;
   company: string;
+  logoUrl: string;
   whatsapp?: string;
 }): Promise<Recruiter> {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
   const company = input.company.trim();
   const whatsapp = input.whatsapp?.trim() || null;
+  const logoUrl = input.logoUrl.trim();
   const passwordHash = hashPassword(input.password);
+
+  if (!logoUrl) throw new Error("LOGO_REQUIRED");
 
   if (isSupabaseAdminConfigured()) {
     const sb = createAdminClient();
@@ -157,6 +177,8 @@ export async function registerRecruiter(input: {
         password_hash: passwordHash,
         company,
         whatsapp,
+        logo_url: logoUrl,
+        verification_status: "pending",
       })
       .select("*")
       .single();
@@ -178,6 +200,10 @@ export async function registerRecruiter(input: {
     password_hash: passwordHash,
     company,
     whatsapp,
+    logo_url: logoUrl,
+    verification_status: "pending",
+    verified_at: null,
+    verification_note: null,
     active: true,
     created_at: new Date().toISOString(),
     last_login_at: null,
@@ -226,9 +252,7 @@ export async function getRecruiterById(id: string): Promise<Recruiter | null> {
     const sb = createAdminClient();
     const { data } = await sb
       .from("tc_recruiters")
-      .select(
-        "id,name,email,company,whatsapp,active,created_at,last_login_at,password_hash",
-      )
+      .select("*")
       .eq("id", id)
       .maybeSingle();
     return data ? mapRecruiter(data as RecruiterRow) : null;
@@ -243,9 +267,7 @@ export async function listRecruiters(): Promise<Recruiter[]> {
     const sb = createAdminClient();
     const { data } = await sb
       .from("tc_recruiters")
-      .select(
-        "id,name,email,company,whatsapp,active,created_at,last_login_at,password_hash",
-      )
+      .select("*")
       .order("created_at", { ascending: false });
     return (data ?? []).map((r) => mapRecruiter(r as RecruiterRow));
   }
@@ -253,6 +275,40 @@ export async function listRecruiters(): Promise<Recruiter[]> {
   return store.recruiters
     .map(mapRecruiter)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function updateRecruiterVerification(
+  id: string,
+  status: VerificationStatus,
+  note?: string | null,
+): Promise<Recruiter | null> {
+  const now = new Date().toISOString();
+  const verifiedAt = status === "approved" ? now : null;
+  const verificationNote = note?.trim() || null;
+
+  if (isSupabaseAdminConfigured()) {
+    const sb = createAdminClient();
+    const { data } = await sb
+      .from("tc_recruiters")
+      .update({
+        verification_status: status,
+        verified_at: verifiedAt,
+        verification_note: verificationNote,
+      })
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+    return data ? mapRecruiter(data as RecruiterRow) : null;
+  }
+
+  const store = await readLocal();
+  const row = store.recruiters.find((r) => r.id === id);
+  if (!row) return null;
+  row.verification_status = status;
+  row.verified_at = verifiedAt;
+  row.verification_note = verificationNote;
+  await writeLocal(store);
+  return mapRecruiter(row);
 }
 
 export async function createJob(input: {
@@ -265,6 +321,7 @@ export async function createJob(input: {
   requirements: string;
   salaryLabel?: string;
   contactEmail: string;
+  companyLogoUrl: string;
 }): Promise<JobPost> {
   const now = new Date().toISOString();
   if (isSupabaseAdminConfigured()) {
@@ -281,6 +338,7 @@ export async function createJob(input: {
         requirements: input.requirements.trim(),
         salary_label: input.salaryLabel?.trim() || null,
         contact_email: input.contactEmail.trim().toLowerCase(),
+        company_logo_url: input.companyLogoUrl.trim(),
         status: "pending",
       })
       .select("*")
@@ -301,6 +359,7 @@ export async function createJob(input: {
     requirements: input.requirements.trim(),
     salary_label: input.salaryLabel?.trim() || null,
     contact_email: input.contactEmail.trim().toLowerCase(),
+    company_logo_url: input.companyLogoUrl.trim(),
     status: "pending",
     admin_note: null,
     created_at: now,
@@ -322,6 +381,7 @@ export async function updateJob(
     description: string;
     requirements: string;
     salaryLabel: string | null;
+    companyLogoUrl: string | null;
     status: JobStatus;
     adminNote: string | null;
     publishedAt: string | null;
@@ -345,6 +405,8 @@ export async function updateJob(
       patch.requirements = input.requirements.trim();
     if (input.salaryLabel !== undefined)
       patch.salary_label = input.salaryLabel?.trim() || null;
+    if (input.companyLogoUrl !== undefined)
+      patch.company_logo_url = input.companyLogoUrl;
     if (input.status !== undefined) patch.status = input.status;
     if (input.adminNote !== undefined) patch.admin_note = input.adminNote;
     if (input.publishedAt !== undefined) patch.published_at = input.publishedAt;
@@ -375,6 +437,8 @@ export async function updateJob(
     row.requirements = input.requirements.trim();
   if (input.salaryLabel !== undefined)
     row.salary_label = input.salaryLabel?.trim() || null;
+  if (input.companyLogoUrl !== undefined)
+    row.company_logo_url = input.companyLogoUrl;
   if (input.status !== undefined) row.status = input.status;
   if (input.adminNote !== undefined) row.admin_note = input.adminNote;
   if (input.publishedAt !== undefined) row.published_at = input.publishedAt;
@@ -397,7 +461,6 @@ export async function getJob(id: string): Promise<JobPost | null> {
   const row = store.jobs.find((j) => j.id === id);
   if (row) return mapJob(row);
 
-  // Public published lookup via anon when local miss
   if (isSupabaseConfigured()) {
     const sb = createAnonClient();
     const { data } = await sb

@@ -41,22 +41,38 @@ export default async function JobsPage() {
                 href={`/jobs/${job.id}`}
                 className="block border border-line bg-white px-5 py-5 transition hover:border-teal/40 hover:shadow-sm sm:px-6"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-lg font-bold text-ink">{job.title}</h2>
-                    <p className="mt-1 text-sm text-muted">
-                      {job.companyName} · {job.location}
-                    </p>
+                <div className="flex items-start gap-4">
+                  {job.companyLogoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={job.companyLogoUrl}
+                      alt=""
+                      className="h-14 w-14 shrink-0 border border-line object-contain p-1"
+                    />
+                  ) : (
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center border border-line bg-[#f8fafc] text-xs font-bold text-muted">
+                      {job.companyName.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h2 className="text-lg font-bold text-ink">{job.title}</h2>
+                        <p className="mt-1 text-sm text-muted">
+                          {job.companyName} · {job.location}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
+                        {formatType(job.employmentType)}
+                      </span>
+                    </div>
+                    {job.salaryLabel ? (
+                      <p className="mt-3 text-sm font-semibold text-teal">
+                        {job.salaryLabel}
+                      </p>
+                    ) : null}
                   </div>
-                  <span className="rounded-full bg-[#f1f5f9] px-2.5 py-1 text-xs font-semibold capitalize text-slate-700">
-                    {formatType(job.employmentType)}
-                  </span>
                 </div>
-                {job.salaryLabel ? (
-                  <p className="mt-3 text-sm font-semibold text-teal">
-                    {job.salaryLabel}
-                  </p>
-                ) : null}
               </Link>
             ))
           )}

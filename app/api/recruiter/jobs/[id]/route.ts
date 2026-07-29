@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getRecruiterSession } from "@/lib/recruiter/auth";
 import {
   getJob,
+  getRecruiterById,
   updateJob,
   type EmploymentType,
 } from "@/lib/recruiter/store";
@@ -35,6 +36,14 @@ export async function PATCH(request: Request, context: Ctx) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const recruiter = await getRecruiterById(session.id);
+  if (!recruiter || recruiter.verificationStatus !== "approved") {
+    return NextResponse.json(
+      { error: "Account must be verified to update jobs." },
+      { status: 403 },
+    );
+  }
+
   const { id } = await context.params;
   const existing = await getJob(id);
   if (!existing || existing.recruiterId !== session.id) {
@@ -90,6 +99,7 @@ export async function PATCH(request: Request, context: Ctx) {
       description: body.description,
       requirements: body.requirements,
       salaryLabel: body.salaryLabel,
+      companyLogoUrl: recruiter.logoUrl,
       ...(resubmit
         ? {
             status: "pending" as const,

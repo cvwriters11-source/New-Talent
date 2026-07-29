@@ -13,7 +13,8 @@ export default function RecruiterRegisterPage() {
       </p>
       <h1 className="mt-2 text-2xl text-ink">Create account</h1>
       <p className="mt-2 text-sm text-muted">
-        Register to submit job posts for Talent Crafters review.
+        Upload your company logo and register. Talent Crafters verifies every
+        account before posting is enabled.
       </p>
       <div className="mt-7">
         <RecruiterRegisterForm />
