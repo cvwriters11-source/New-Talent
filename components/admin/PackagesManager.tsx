@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { CareerPackage, CvColorOption } from "@/lib/packages";
 import { slugifyPackageName } from "@/lib/packages";
 import { formatRand } from "@/lib/admin/format";
-import { formatLocalizedAmount } from "@/lib/geo-pricing";
+import { formatLocalizedAmount } from "@/lib/geo-pricing-format";
 
 type FormState = {
   name: string;

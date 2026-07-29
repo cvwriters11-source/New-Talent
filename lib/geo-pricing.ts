@@ -1,13 +1,12 @@
 import { headers } from "next/headers";
+import {
+  convertFromZar,
+  formatLocalizedAmount,
+  type DisplayCurrency,
+} from "@/lib/geo-pricing-format";
 
-export type DisplayCurrency = {
-  code: string;
-  symbol: string;
-  /** Multiply ZAR quote baseline by this to get local amount. */
-  rateFromZar: number;
-  locale: string;
-  label: string;
-};
+export type { DisplayCurrency };
+export { convertFromZar, formatLocalizedAmount };
 
 const CURRENCIES: Record<string, DisplayCurrency> = {
   ZAR: {
@@ -100,7 +99,6 @@ const COUNTRY_CURRENCY: Record<string, keyof typeof CURRENCIES> = {
   NG: "NGN",
   KE: "KES",
   GH: "GHS",
-  // Broader Africa defaults to ZAR quote baseline
   ZW: "ZAR",
   MZ: "ZAR",
   ZM: "ZAR",
@@ -139,28 +137,6 @@ function currencyForCountry(country: string): DisplayCurrency {
   return CURRENCIES[code] || CURRENCIES.USD;
 }
 
-export function convertFromZar(zarAmount: number, currency: DisplayCurrency) {
-  const raw = zarAmount * currency.rateFromZar;
-  if (currency.code === "ZAR" || currency.code === "NGN" || currency.code === "KES") {
-    return Math.round(raw);
-  }
-  return Math.round(raw);
-}
-
-export function formatLocalizedAmount(
-  zarAmount: number,
-  currency: DisplayCurrency,
-) {
-  const amount = convertFromZar(zarAmount, currency);
-  const formatted = amount.toLocaleString(currency.locale);
-  return {
-    amount,
-    code: currency.code,
-    formatted,
-    display: `${currency.code} ${formatted}`,
-  };
-}
-
 export async function getRequestCountry(): Promise<string> {
   const h = await headers();
   const fromHeader =
@@ -173,7 +149,6 @@ export async function getRequestCountry(): Promise<string> {
     return fromHeader.trim().toUpperCase();
   }
 
-  // Local / unknown — default to South Africa (home market)
   return "ZA";
 }
 
