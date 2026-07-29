@@ -20,16 +20,20 @@ export function BrandLogo({
       } ${className}`}
     >
       <Image
-        src="/brand/logo-sm.png"
+        src="/brand/logo.png"
         alt="Talent Crafters Recruitment"
-        width={isFooter ? 220 : 180}
-        height={isFooter ? 140 : 90}
+        width={isFooter ? 280 : 220}
+        height={isFooter ? 280 : 220}
         priority={priority}
-        sizes={isFooter ? "220px" : "(max-width: 640px) 140px, 180px"}
+        sizes={
+          isFooter
+            ? "(max-width: 640px) 160px, 200px"
+            : "(max-width: 640px) 88px, (max-width: 1024px) 108px, 120px"
+        }
         className={
           isFooter
-            ? "h-[5rem] w-auto max-w-[12rem] object-contain sm:h-[5.5rem] sm:max-w-[14rem]"
-            : "h-12 w-auto max-w-[9.5rem] object-contain object-left sm:h-14 sm:max-w-[11rem]"
+            ? "h-[6.5rem] w-auto max-w-[11rem] object-contain object-left sm:h-[7.5rem] sm:max-w-[13rem]"
+            : "h-[4.75rem] w-auto max-w-[5.25rem] object-contain object-left sm:h-[5.75rem] sm:max-w-[6.5rem] md:h-[6.25rem] md:max-w-[7rem]"
         }
       />
     </span>

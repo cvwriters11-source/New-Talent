@@ -196,7 +196,13 @@ export function PackagePricingGrid({
                   featured ? "pt-10 sm:pt-11" : "pt-12 sm:pt-14"
                 }`}
               >
-                <ul className="mt-1 space-y-2.5 text-[13px] leading-snug text-ink sm:text-sm">
+                <p
+                  className="mb-4 inline-flex w-fit items-center justify-center rounded-full px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white sm:text-[11px]"
+                  style={{ backgroundColor: theme.accent }}
+                >
+                  What you will get
+                </p>
+                <ul className="space-y-2.5 text-[13px] leading-snug text-ink sm:text-sm">
                   {pkg.includes
                     .filter(
                       (item) =>
@@ -217,12 +223,6 @@ export function PackagePricingGrid({
                     style={{ backgroundColor: theme.accent }}
                   >
                     Order now
-                  </Link>
-                  <Link
-                    href={`/packages/${pkg.slug}`}
-                    className="block py-1 text-center text-xs font-semibold text-muted underline-offset-2 hover:underline"
-                  >
-                    View details
                   </Link>
                 </div>
               </div>
