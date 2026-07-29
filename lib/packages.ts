@@ -41,7 +41,7 @@ export const defaultPackages: CareerPackage[] = [
       "Fresh graduates and early-career candidates seeking roles within Africa.",
     timeline: "10 working days (ONLY AFRICA)",
     region: undefined,
-    quoteAmount: 1200,
+    quoteAmount: 950,
     active: true,
     colorOptions: [
       { id: "teal", label: "Teal", hex: "#0d9488" },
@@ -69,7 +69,7 @@ export const defaultPackages: CareerPackage[] = [
       "Working professionals seeking stronger roles within Africa with recruiter-backed CV support.",
     timeline: "7 working days (ONLY AFRICA)",
     region: undefined,
-    quoteAmount: 1800,
+    quoteAmount: 1200,
     active: true,
     colorOptions: [
       { id: "teal", label: "Teal", hex: "#0d9488" },
@@ -103,7 +103,7 @@ export const defaultPackages: CareerPackage[] = [
       "Senior professionals, managers, and executives competing for high-stakes roles within Africa.",
     timeline: "5 working days",
     region: "Africa only",
-    quoteAmount: 2500,
+    quoteAmount: 1500,
     active: true,
     colorOptions: [
       { id: "teal", label: "Teal", hex: "#0d9488" },
@@ -137,7 +137,7 @@ export const defaultPackages: CareerPackage[] = [
     idealFor:
       "Professionals applying for roles outside South Africa who need an internationally styled résumé.",
     timeline: "4 working days",
-    quoteAmount: 2200,
+    quoteAmount: 2500,
     active: true,
     colorOptions: [
       { id: "teal", label: "Teal", hex: "#0d9488" },
