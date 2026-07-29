@@ -218,53 +218,89 @@ export async function sbUpsertPackage(
   pkg: CareerPackage,
   previousSlug?: string,
 ) {
-  if (!isSupabaseAdminConfigured()) return null;
-  const client = createAdminClient();
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
   const oldSlug = previousSlug || pkg.slug;
+  const row = toPackageRow(pkg);
+
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+
+    if (oldSlug !== pkg.slug) {
+      const { error: delError } = await client
+        .from("tc_packages")
+        .delete()
+        .eq("slug", oldSlug);
+      if (delError) throw new Error(delError.message);
+    }
+
+    const { data: existing } = await client
+      .from("tc_packages")
+      .select("sort_order")
+      .eq("slug", pkg.slug)
+      .maybeSingle();
+
+    const { count } = await client
+      .from("tc_packages")
+      .select("*", { count: "exact", head: true });
+
+    const upsertRow = {
+      ...row,
+      sort_order:
+        typeof existing?.sort_order === "number"
+          ? existing.sort_order
+          : (count || 0) + 1,
+    };
+
+    const { data, error } = await client
+      .from("tc_packages")
+      .upsert(upsertRow)
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return mapPackageRow(data as PackageRow);
+  }
+
+  // Anon RPC path when service role is not configured (production admin writes).
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
 
   if (oldSlug !== pkg.slug) {
-    const { error: delError } = await client
-      .from("tc_packages")
-      .delete()
-      .eq("slug", oldSlug);
+    const { error: delError } = await client.rpc("tc_delete_package", {
+      p_slug: oldSlug,
+      write_key: writeKey,
+    });
     if (delError) throw new Error(delError.message);
   }
 
-  const { data: existing } = await client
-    .from("tc_packages")
-    .select("sort_order")
-    .eq("slug", oldSlug === pkg.slug ? pkg.slug : "__none__")
-    .maybeSingle();
-
-  const { count } = await client
-    .from("tc_packages")
-    .select("*", { count: "exact", head: true });
-
-  const row = toPackageRow(
-    pkg,
-    typeof existing?.sort_order === "number"
-      ? existing.sort_order
-      : (count || 0) + 1,
-  );
-
-  const { data, error } = await client
-    .from("tc_packages")
-    .upsert(row)
-    .select("*")
-    .single();
+  const { data, error } = await client.rpc("tc_upsert_package", {
+    payload: row,
+    write_key: writeKey,
+  });
   if (error) throw new Error(error.message);
   return mapPackageRow(data as PackageRow);
 }
 
 export async function sbDeletePackage(slug: string) {
-  if (!isSupabaseAdminConfigured()) return null;
-  const client = createAdminClient();
-  const { error, count } = await client
-    .from("tc_packages")
-    .delete({ count: "exact" })
-    .eq("slug", slug);
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { error, count } = await client
+      .from("tc_packages")
+      .delete({ count: "exact" })
+      .eq("slug", slug);
+    if (error) throw new Error(error.message);
+    return (count || 0) > 0;
+  }
+
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_delete_package", {
+    p_slug: slug,
+    write_key: writeKey,
+  });
   if (error) throw new Error(error.message);
-  return (count || 0) > 0;
+  return Boolean(data);
 }
 
 export async function sbGetPopup() {

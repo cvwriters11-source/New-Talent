@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { CareerPackage, CvColorOption } from "@/lib/packages";
 import { slugifyPackageName } from "@/lib/packages";
 import { formatRand } from "@/lib/admin/format";
+import { formatLocalizedAmount } from "@/lib/geo-pricing";
 
 type FormState = {
   name: string;
@@ -29,7 +30,7 @@ const emptyForm = (): FormState => ({
   subtitle: "",
   tagline: "",
   summary: "",
-  priceLabel: "Request a quote",
+  priceLabel: "R1,500",
   includesText: "",
   idealFor: "",
   timeline: "",
@@ -40,6 +41,18 @@ const emptyForm = (): FormState => ({
   slug: "",
   active: true,
 });
+
+function priceLabelFromAmount(amount: number) {
+  return `R${Math.round(amount).toLocaleString("en-ZA")}`;
+}
+
+const GEO_PREVIEW = [
+  { code: "ZAR", symbol: "R", rateFromZar: 1, locale: "en-ZA", label: "ZAR" },
+  { code: "USD", symbol: "$", rateFromZar: 0.055, locale: "en-US", label: "USD" },
+  { code: "CAD", symbol: "C$", rateFromZar: 0.075, locale: "en-CA", label: "CAD" },
+  { code: "GBP", symbol: "£", rateFromZar: 0.043, locale: "en-GB", label: "GBP" },
+  { code: "EUR", symbol: "€", rateFromZar: 0.051, locale: "en-IE", label: "EUR" },
+] as const;
 
 function colorsToText(colors?: CvColorOption[]) {
   if (!colors?.length) return "";
@@ -124,6 +137,12 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
       const next = { ...prev, [key]: value };
       if (key === "name" && mode === "create") {
         next.slug = slugifyPackageName(String(value));
+      }
+      if (key === "quoteAmount") {
+        const amount = Number(value);
+        if (Number.isFinite(amount) && amount >= 0) {
+          next.priceLabel = priceLabelFromAmount(amount);
+        }
       }
       return next;
     });
@@ -256,10 +275,14 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
               <span className="mb-1.5 block font-semibold">Price label</span>
               <input
                 required
-                className={fieldClass}
+                readOnly
+                className={`${fieldClass} bg-[#f8fafc]`}
                 value={form.priceLabel}
-                onChange={(e) => update("priceLabel", e.target.value)}
+                title="Auto-updates from Quote amount"
               />
+              <span className="mt-1 block text-xs text-muted">
+                Auto-set from quote amount (shown on package pages).
+              </span>
             </label>
           </div>
 
@@ -299,7 +322,9 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <label className="block text-sm">
-              <span className="mb-1.5 block font-semibold">Quote amount (R)</span>
+              <span className="mb-1.5 block font-semibold">
+                Quote amount (R) — live package price
+              </span>
               <input
                 required
                 type="number"
@@ -309,6 +334,9 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
                 value={form.quoteAmount}
                 onChange={(e) => update("quoteAmount", e.target.value)}
               />
+              <span className="mt-1 block text-xs text-muted">
+                Saves to this package on the public site. Geo visitors see a converted amount from this ZAR baseline.
+              </span>
             </label>
             <label className="block text-sm">
               <span className="mb-1.5 block font-semibold">Timeline</span>
@@ -327,6 +355,27 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
                 onChange={(e) => update("region", e.target.value)}
               />
             </label>
+          </div>
+
+          <div className="rounded-lg border border-line bg-[#f8fafc] px-4 py-3">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
+              Approximate visitor prices for this package
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {GEO_PREVIEW.map((currency) => {
+                const amount = Number(form.quoteAmount);
+                if (!Number.isFinite(amount)) return null;
+                const local = formatLocalizedAmount(amount, currency);
+                return (
+                  <span
+                    key={currency.code}
+                    className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-ink ring-1 ring-line"
+                  >
+                    {local.display}
+                  </span>
+                );
+              })}
+            </div>
           </div>
 
           <label className="block text-sm">

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/admin/auth";
 import {
@@ -9,6 +10,13 @@ import {
 import { slugifyPackageName } from "@/lib/packages";
 
 export const runtime = "nodejs";
+
+function revalidatePackagePaths(slug: string) {
+  revalidatePath("/");
+  revalidatePath("/packages");
+  revalidatePath(`/packages/${slug}`);
+  revalidatePath(`/packages/${slug}/checkout`);
+}
 
 const colorSchema = z.object({
   id: z.string().trim().min(1).max(40),
@@ -80,6 +88,7 @@ export async function POST(request: Request) {
 
   try {
     const pkg = await upsertPackage(toPackage(parsed.data));
+    revalidatePackagePaths(pkg.slug);
     return NextResponse.json({ ok: true, package: pkg });
   } catch (err) {
     return NextResponse.json(
@@ -114,6 +123,13 @@ export async function PUT(request: Request) {
     const pkg = await upsertPackage(toPackage(parsed.data), {
       previousSlug: parsed.data.previousSlug || parsed.data.slug,
     });
+    revalidatePackagePaths(pkg.slug);
+    if (
+      parsed.data.previousSlug &&
+      parsed.data.previousSlug !== pkg.slug
+    ) {
+      revalidatePackagePaths(parsed.data.previousSlug);
+    }
     return NextResponse.json({ ok: true, package: pkg });
   } catch (err) {
     return NextResponse.json(
@@ -144,5 +160,6 @@ export async function DELETE(request: Request) {
   if (!removed) {
     return NextResponse.json({ error: "Package not found." }, { status: 404 });
   }
+  revalidatePackagePaths(body.slug);
   return NextResponse.json({ ok: true });
 }

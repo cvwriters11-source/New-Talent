@@ -224,15 +224,22 @@ function defaultPopup(): SitePopup {
 }
 
 function normalizePackage(pkg: CareerPackage): CareerPackage {
+  const quoteAmount =
+    typeof pkg.quoteAmount === "number" && Number.isFinite(pkg.quoteAmount)
+      ? pkg.quoteAmount
+      : 1500;
   return {
     ...pkg,
-    quoteAmount:
-      typeof pkg.quoteAmount === "number" && Number.isFinite(pkg.quoteAmount)
-        ? pkg.quoteAmount
-        : 1500,
+    quoteAmount,
+    // Keep marketing label in sync with the amount shown publicly (incl. geo conversion baseline).
+    priceLabel: priceLabelFromQuote(quoteAmount),
     active: pkg.active !== false,
     includes: Array.isArray(pkg.includes) ? pkg.includes.filter(Boolean) : [],
   };
+}
+
+function priceLabelFromQuote(amount: number) {
+  return `R${Math.round(amount).toLocaleString("en-ZA")}`;
 }
 
 function ensurePackages(store: AdminStore) {
@@ -388,7 +395,27 @@ export async function upsertPackage(
       if (idx >= 0) globalThis.__tcAdminStore.packages[idx] = fromSb;
       else globalThis.__tcAdminStore.packages.push(fromSb);
     }
+    // Keep local fallback in sync for offline/dev reads.
+    try {
+      const store = await getStore();
+      ensurePackages(store);
+      const previousSlug = options?.previousSlug || next.slug;
+      const existingIndex = store.packages.findIndex(
+        (p) => p.slug === previousSlug || p.slug === next.slug,
+      );
+      if (existingIndex >= 0) store.packages[existingIndex] = fromSb;
+      else store.packages.push(fromSb);
+      await saveStore(store);
+    } catch {
+      // Non-fatal when disk is unavailable (serverless).
+    }
     return fromSb;
+  }
+
+  if (isSupabaseConfigured() && !process.env.TC_DB_WRITE_KEY?.trim()) {
+    throw new Error(
+      "Cannot save package prices to live data: TC_DB_WRITE_KEY is missing.",
+    );
   }
 
   const store = await getStore();

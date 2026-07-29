@@ -75,9 +75,12 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
               Package summary
             </p>
             <p className="mt-1 text-lg font-bold text-ink">{pkg.name}</p>
-            <p className="mt-1 text-xs font-semibold text-muted">
-              {pkg.timeline}
+            <p className="mt-1 text-sm font-semibold text-teal">
+              {pkg.priceLabel} · {pkg.timeline}
               {pkg.region ? ` · ${pkg.region}` : ""}
+            </p>
+            <p className="mt-1 text-xs font-semibold text-muted">
+              Quote baseline updates with admin package pricing.
             </p>
           </div>
           <span className="text-sm font-semibold text-muted lg:hidden">
