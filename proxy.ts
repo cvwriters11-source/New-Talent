@@ -1,34 +1,35 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin/session";
 import {
-  CANDIDATE_COOKIE,
-  verifyCandidateToken,
-} from "@/lib/interview/candidate-session";
+  RECRUITER_COOKIE,
+  verifyRecruiterToken,
+} from "@/lib/recruiter/session";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Candidate interview auth
-  if (
-    pathname.startsWith("/interview/dashboard") ||
-    pathname.startsWith("/interview/session")
-  ) {
-    const token = request.cookies.get(CANDIDATE_COOKIE)?.value;
-    const session = token ? await verifyCandidateToken(token) : null;
-    if (!session) {
-      const login = new URL("/interview", request.url);
+  if (pathname.startsWith("/recruiter")) {
+    const isPublicAuth =
+      pathname === "/recruiter" ||
+      pathname === "/recruiter/login" ||
+      pathname === "/recruiter/register";
+
+    const token = request.cookies.get(RECRUITER_COOKIE)?.value;
+    const session = token ? await verifyRecruiterToken(token) : null;
+
+    if (
+      session &&
+      (pathname === "/recruiter/login" || pathname === "/recruiter/register")
+    ) {
+      return NextResponse.redirect(new URL("/recruiter/dashboard", request.url));
+    }
+
+    if (!isPublicAuth && !session) {
+      const login = new URL("/recruiter/login", request.url);
       login.searchParams.set("next", pathname);
       return NextResponse.redirect(login);
     }
-    return NextResponse.next();
-  }
 
-  if (pathname === "/interview" || pathname.startsWith("/interview/")) {
-    return NextResponse.next();
-  }
-
-  // Admin auth
-  if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
@@ -52,12 +53,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/admin",
-    "/admin/:path*",
-    "/interview/dashboard",
-    "/interview/dashboard/:path*",
-    "/interview/session",
-    "/interview/session/:path*",
-  ],
+  matcher: ["/admin", "/admin/:path*", "/recruiter", "/recruiter/:path*"],
 };

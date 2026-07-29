@@ -34,9 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
-# admin runtime store
+# admin / recruiter local fallback stores
 /data/admin-store.json
-/data/interview-store.json
+/data/recruiter-store.json
 
 # local popup / media uploads
 /public/uploads/

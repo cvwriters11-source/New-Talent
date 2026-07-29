@@ -25,7 +25,6 @@ export default async function AdminPanelLayout({
               ["/admin", "Dashboard"],
               ["/admin/orders", "Orders"],
               ["/admin/packages", "Packages"],
-              ["/admin/interview", "Interview"],
               ["/admin/popup", "Popup"],
               ["/admin/settings", "Settings"],
             ].map(([href, label]) => (

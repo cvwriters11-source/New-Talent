@@ -1,4 +1,3 @@
--- Applied remotely via Supabase MCP (talent_crafters_core / policies_seed / widen_select / tc_interview_prep_tables)
+-- Applied remotely via Supabase MCP (talent_crafters_core / policies_seed / widen_select)
 -- Project: jwgjsotzauhwkgobywdr (Group-Of-recruiters)
--- Tables: tc_packages, tc_customers, tc_orders, tc_site_popup,
---         tc_interview_candidates, tc_interview_questions, tc_interview_sessions, tc_interview_turns
+-- Tables: tc_packages, tc_customers, tc_orders, tc_site_popup

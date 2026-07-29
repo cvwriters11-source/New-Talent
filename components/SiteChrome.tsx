@@ -8,9 +8,10 @@ import { SiteAnnouncementPopup } from "@/components/SiteAnnouncementPopup";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = pathname.startsWith("/admin");
+  const hideChrome =
+    pathname.startsWith("/admin") || pathname.startsWith("/recruiter");
 
-  if (isAdmin) {
+  if (hideChrome) {
     return <>{children}</>;
   }
 

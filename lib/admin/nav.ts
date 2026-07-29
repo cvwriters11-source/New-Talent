@@ -8,7 +8,6 @@ export const adminNav = [
   { href: "/admin/subscriptions", label: "Subscriptions", icon: "subs" },
   { href: "/admin/subscription-plans", label: "Subscription Plans", icon: "plans" },
   { href: "/admin/packages", label: "Packages", icon: "packages" },
-  { href: "/admin/interview", label: "Interview Prep", icon: "interview" },
   { href: "/admin/popup", label: "Site Popup", icon: "popup" },
   { href: "/admin/cv-generator", label: "CV Generator", icon: "cv" },
   { href: "/admin/reviews", label: "Reviews", icon: "reviews" },
