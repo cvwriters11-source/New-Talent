@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ButtonLink } from "@/components/ButtonLink";
 import {
   formatLocalizedAmount,
   type GeoPricing,
@@ -7,22 +6,71 @@ import {
 import type { CareerPackage } from "@/lib/packages";
 
 const FEATURED_SLUG = "professional-package";
-const MOBILE_VISIBLE_INCLUDES = 5;
 
-function CheckIcon() {
+const PLAN_THEMES: Record<
+  string,
+  { accent: string; header: string; short: string }
+> = {
+  "graduate-package": {
+    accent: "#0d9488",
+    header: "#0f766e",
+    short: "Fresh Graduate — Package",
+  },
+  "professional-package": {
+    accent: "#c8102e",
+    header: "#a50d25",
+    short: "Professional Package",
+  },
+  "executive-package": {
+    accent: "#1d4ed8",
+    header: "#1e3a8a",
+    short: "Executive Package",
+  },
+  "international-resume": {
+    accent: "#5b4b8a",
+    header: "#43386a",
+    short: "International Resume",
+  },
+};
+
+function themeFor(slug: string) {
   return (
-    <svg
-      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal sm:h-4 sm:w-4"
-      viewBox="0 0 20 20"
-      fill="currentColor"
+    PLAN_THEMES[slug] ?? {
+      accent: "#0b1f3a",
+      header: "#0b1f3a",
+      short: "PLAN",
+    }
+  );
+}
+
+function shortLabel(pkg: CareerPackage) {
+  return (
+    PLAN_THEMES[pkg.slug]?.short ??
+    pkg.name
+      .replace(/ package| resume| résumé/gi, "")
+      .trim()
+      .toUpperCase()
+      .slice(0, 12)
+  );
+}
+
+function CheckIcon({ color }: { color: string }) {
+  return (
+    <span
+      className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white"
+      style={{ backgroundColor: color }}
       aria-hidden
     >
-      <path
-        fillRule="evenodd"
-        d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3-3a1 1 0 011.414-1.414L8.75 11.836l6.543-6.543a1 1 0 011.414 0z"
-        clipRule="evenodd"
-      />
-    </svg>
+      <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
+        <path
+          d="M2.5 6.2L4.8 8.5L9.5 3.5"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
   );
 }
 
@@ -41,7 +89,7 @@ export function PackagePricingGrid({
 }) {
   return (
     <div>
-      <div className="max-w-2xl">
+      <div className="mx-auto max-w-2xl text-center">
         <p className="section-label">{eyebrow}</p>
         <h2 className="mt-3 text-2xl text-ink sm:text-3xl md:text-4xl">
           {title}
@@ -58,14 +106,10 @@ export function PackagePricingGrid({
         </p>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+      <div className="mt-10 grid grid-cols-1 gap-5 sm:mt-12 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 xl:items-end xl:gap-5">
         {packages.map((pkg) => {
+          const theme = themeFor(pkg.slug);
           const featured = pkg.slug === FEATURED_SLUG;
-          const previewIncludes = pkg.includes.slice(
-            0,
-            MOBILE_VISIBLE_INCLUDES,
-          );
-          const remaining = pkg.includes.length - previewIncludes.length;
           const local = formatLocalizedAmount(
             pkg.quoteAmount,
             pricing.currency,
@@ -74,79 +118,113 @@ export function PackagePricingGrid({
           return (
             <article
               key={pkg.slug}
-              className={`flex flex-col border bg-white p-4 shadow-sm sm:p-6 ${
-                featured ? "border-teal ring-1 ring-teal/30" : "border-line"
+              className={`relative flex flex-col rounded-2xl bg-white shadow-[0_10px_40px_rgba(11,31,58,0.1)] transition duration-300 ${
+                featured
+                  ? "ring-2 sm:scale-[1.02] xl:-translate-y-3 xl:scale-105"
+                  : "ring-1 ring-black/5"
               }`}
+              style={
+                featured
+                  ? { boxShadow: `0 16px 48px ${theme.accent}33` }
+                  : undefined
+              }
             >
-              {featured ? (
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal sm:text-[11px]">
-                  Most chosen
-                </p>
-              ) : null}
-              <h3
-                className={`text-base font-bold sm:text-lg ${
-                  featured ? "text-teal" : "text-ink"
-                } ${featured ? "mt-1" : ""}`}
-              >
-                <Link href={`/packages/${pkg.slug}`} className="hover:underline">
-                  {pkg.name}
-                </Link>
-              </h3>
+              {/* Header + price badge (badge sits outside overflow clip) */}
+              <div className="relative">
+                <div className="overflow-hidden rounded-t-2xl">
+                  <div
+                    className="relative h-[7.75rem] shrink-0 sm:h-[8.5rem]"
+                    style={{
+                      backgroundColor: theme.header,
+                      clipPath: featured
+                        ? "polygon(0 0, 100% 0, 100% 72%, 0 100%)"
+                        : "polygon(0 0, 100% 0, 100% 100%, 0 72%)",
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-3 px-5 pt-5 pr-24 sm:px-6 sm:pt-6 sm:pr-28">
+                      <div>
+                        {featured ? (
+                          <p className="mb-1 text-[9px] font-bold uppercase tracking-[0.18em] text-white/85">
+                            Most chosen
+                          </p>
+                        ) : null}
+                        <p className="max-w-[11rem] text-[15px] font-bold leading-tight tracking-tight text-white sm:max-w-[12rem] sm:text-base">
+                          {shortLabel(pkg)}
+                        </p>
+                        <p className="mt-1 max-w-[9rem] text-[11px] leading-snug text-white/80 sm:max-w-[10rem]">
+                          {pkg.timeline}
+                          {pkg.region ? ` · ${pkg.region}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-              <div className="mt-3 sm:mt-4">
-                <p className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                  <span className="mr-1 text-sm font-semibold text-muted sm:text-base">
+                {/* Fully visible — not clipped by header overflow */}
+                <div
+                  className="pointer-events-none absolute right-3 z-30 flex h-[5.5rem] w-[5.5rem] flex-col items-center justify-center rounded-full bg-white sm:right-4 sm:h-[6.25rem] sm:w-[6.25rem]"
+                  style={{
+                    top: featured ? "3.4rem" : "4.55rem",
+                    boxShadow: `0 10px 28px ${theme.accent}40`,
+                    outline: `3px solid ${theme.accent}`,
+                  }}
+                  aria-label={`Price ${local.code} ${local.formatted}`}
+                >
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wide sm:text-xs"
+                    style={{ color: theme.accent }}
+                  >
                     {local.code}
                   </span>
-                  {local.formatted}
-                </p>
-                <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted sm:text-xs">
-                  Quote baseline
-                  {pricing.isConverted
-                    ? ` · ~R ${Math.round(pkg.quoteAmount).toLocaleString("en-ZA")}`
-                    : ""}
-                </p>
+                  <span
+                    className="text-lg font-bold leading-none tracking-tight sm:text-xl"
+                    style={{ color: theme.accent }}
+                  >
+                    {local.formatted}
+                  </span>
+                  <span
+                    className="mt-1 text-[9px] font-bold uppercase tracking-wider sm:text-[10px]"
+                    style={{ color: theme.accent }}
+                  >
+                    Quote
+                  </span>
+                </div>
               </div>
 
-              <p className="mt-2 text-sm text-ink sm:mt-3">
-                Turnaround:{" "}
-                <span className="font-semibold">{pkg.timeline}</span>
-                {pkg.region ? (
-                  <span className="text-muted"> · {pkg.region}</span>
-                ) : null}
-              </p>
+              <div
+                className={`flex flex-1 flex-col px-5 pb-5 sm:px-6 sm:pb-6 ${
+                  featured ? "pt-10 sm:pt-11" : "pt-12 sm:pt-14"
+                }`}
+              >
+                <ul className="mt-1 space-y-2.5 text-[13px] leading-snug text-ink sm:text-sm">
+                  {pkg.includes
+                    .filter(
+                      (item) =>
+                        !/^turn\s*around\s*time/i.test(item.trim()),
+                    )
+                    .map((item) => (
+                    <li key={item} className="flex gap-2.5">
+                      <CheckIcon color={theme.accent} />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <ul className="mt-4 space-y-2 text-[13px] leading-snug text-ink sm:mt-5 sm:space-y-2.5 sm:text-sm">
-                {previewIncludes.map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <CheckIcon />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              {remaining > 0 ? (
-                <Link
-                  href={`/packages/${pkg.slug}`}
-                  className="mt-2 text-xs font-semibold text-teal underline-offset-2 hover:underline"
-                >
-                  +{remaining} more inclusions
-                </Link>
-              ) : null}
-
-              <div className="mt-5 flex flex-col gap-2 sm:mt-6">
-                <ButtonLink
-                  href={`/packages/${pkg.slug}/checkout`}
-                  className="w-full justify-center px-4 py-3 text-sm"
-                  variant={featured ? "primary" : "secondary"}
-                >
-                  Order now
-                </ButtonLink>
-                <Link
-                  href={`/packages/${pkg.slug}`}
-                  className="block py-1 text-center text-xs font-semibold text-muted underline-offset-2 hover:text-teal hover:underline"
-                >
-                  View details
-                </Link>
+                <div className="mt-auto flex flex-col gap-2 pt-6">
+                  <Link
+                    href={`/packages/${pkg.slug}/checkout`}
+                    className="inline-flex w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:brightness-110 active:scale-[0.98]"
+                    style={{ backgroundColor: theme.accent }}
+                  >
+                    Order now
+                  </Link>
+                  <Link
+                    href={`/packages/${pkg.slug}`}
+                    className="block py-1 text-center text-xs font-semibold text-muted underline-offset-2 hover:underline"
+                  >
+                    View details
+                  </Link>
+                </div>
               </div>
             </article>
           );

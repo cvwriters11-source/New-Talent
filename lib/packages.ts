@@ -26,24 +26,21 @@ export type CareerPackage = {
 export const defaultPackages: CareerPackage[] = [
   {
     slug: "graduate-package",
-    name: "Graduate Package",
-    subtitle: "Fresh Graduate Package",
+    name: "Fresh Graduate — Package",
+    subtitle: "Fresh Graduate — Package",
     tagline: "ATS-friendly CV writing for Africa — start your career strong.",
     summary:
-      "Our Fresh Graduate Package is designed for graduates and early-career candidates applying across Africa. You get expert ATS-friendly CV writing, a job application email template, and LinkedIn optimisation — with a CV colour you choose: Teal, Dark green, or Blue.",
+      "Our Fresh Graduate Package is designed for graduates and early-career candidates applying across Africa. You get expert ATS-friendly CV writing, a job application email template, and LinkedIn optimisation — with a 10 working day turnaround (Africa only).",
     priceLabel: "Request a quote",
     includes: [
-      "Expert ATS-friendly CV writing (optimised for screening systems)",
-      "Fresh graduate layout highlighting education, projects, and potential",
-      "Job application email template",
-      "LinkedIn optimisation",
-      "Client colour choice: Teal, Dark green, or Blue",
-      "Africa-focused application positioning",
+      "Expert ATS-FRIENDLY CV writing optimized",
+      "Job Application Email Template",
+      "LinkedIn optimization",
     ],
     idealFor:
       "Fresh graduates and early-career candidates seeking roles within Africa.",
-    timeline: "10 working days",
-    region: "Africa only",
+    timeline: "10 working days (ONLY AFRICA)",
+    region: undefined,
     quoteAmount: 1200,
     active: true,
     colorOptions: [
@@ -61,7 +58,6 @@ export const defaultPackages: CareerPackage[] = [
       "Our Professional Package is built for experienced candidates applying within Africa. You get expert ATS-friendly CV writing and design, LinkedIn optimisation, job application email templates, free career hunt techniques, and your email and CV added to our recruiters database.",
     priceLabel: "Request a quote",
     includes: [
-      "Turn around time 7 working days (ONLY AFRICA)",
       "Expert ATS-FRIENDLY CV writing",
       "Adding your email and CV into Recruiters Database",
       "Job Application Email Template",
@@ -71,8 +67,8 @@ export const defaultPackages: CareerPackage[] = [
     ],
     idealFor:
       "Working professionals seeking stronger roles within Africa with recruiter-backed CV support.",
-    timeline: "7 working days",
-    region: "Africa only",
+    timeline: "7 working days (ONLY AFRICA)",
+    region: undefined,
     quoteAmount: 1800,
     active: true,
     colorOptions: [
