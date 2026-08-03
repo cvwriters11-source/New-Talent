@@ -1,61 +1,25 @@
 import type { Metadata } from "next";
-import { ButtonLink } from "@/components/ButtonLink";
-import { SectionHeading } from "@/components/SectionHeading";
-import { site } from "@/lib/site";
-import { whatsappLink } from "@/lib/whatsapp";
+import { ContactQuoteHub } from "@/components/ContactQuoteHub";
 
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Contact Talent Crafters Career Development via email, WhatsApp, or the enquiry form.",
+    "Request a quote from Talent Crafters Career Development via packages, telephone, WhatsApp, email, or visit.",
 };
 
 export default function ContactPage() {
   return (
-    <div className="bg-cream">
-      <section className="mx-auto max-w-6xl px-5 py-16 md:px-8 md:py-20">
-        <SectionHeading
-          eyebrow="Contact"
-          title="Let’s talk about your next step."
-          description="Reach us by WhatsApp or email — or send a structured enquiry and we’ll come back with clear next steps."
-        />
-
-        <div className="mt-14 grid gap-8 md:grid-cols-3">
-          <div className="border border-line bg-paper p-7">
-            <h2 className="text-xl text-ink">Email</h2>
-            <a
-              href={`mailto:${site.email}`}
-              className="mt-3 block text-sm font-semibold text-teal hover:text-teal-bright"
-            >
-              {site.email}
-            </a>
-          </div>
-          <div className="border border-line bg-paper p-7">
-            <h2 className="text-xl text-ink">WhatsApp</h2>
-            <p className="mt-3 text-sm text-muted">
-              Fast for quick questions and package interest.
-            </p>
-            <div className="mt-5">
-              <ButtonLink
-                href={whatsappLink(
-                  "Hi Talent Crafters — I'd like to talk about Career Development packages.",
-                )}
-                external
-              >
-                Open WhatsApp
-              </ButtonLink>
-            </div>
-          </div>
-          <div className="border border-line bg-paper p-7">
-            <h2 className="text-xl text-ink">Location</h2>
-            <p className="mt-3 text-sm text-muted">{site.location}</p>
-            <div className="mt-5">
-              <ButtonLink href="/packages" variant="secondary">
-                View packages
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
+    <div className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-[#eef2f7]">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-70"
+        aria-hidden
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 50% 18%, rgba(200,16,46,0.06), transparent 42%), radial-gradient(circle at 80% 80%, rgba(11,31,58,0.08), transparent 40%), radial-gradient(circle at 15% 70%, rgba(11,31,58,0.05), transparent 35%)",
+        }}
+      />
+      <section className="relative mx-auto max-w-6xl px-5 py-12 md:px-8 md:py-16 lg:py-20">
+        <ContactQuoteHub />
       </section>
     </div>
   );
