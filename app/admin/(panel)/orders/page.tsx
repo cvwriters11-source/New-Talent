@@ -10,7 +10,7 @@ export default async function AdminOrdersPage() {
     <div>
       <h1 className="text-2xl font-bold text-ink">Orders</h1>
       <p className="mt-1 text-sm text-muted">
-        Checkout submissions from the Career Development website.
+        Checkout submissions and invoice requests from the Career Development website.
       </p>
       <div className="mt-6">
         <OrdersTable orders={store.orders} />

@@ -26,6 +26,7 @@ export type OrderStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
 export type AdminOrder = {
   id: string;
+  orderNumber: string;
   createdAt: string;
   completedAt?: string | null;
   firstName: string;
@@ -522,9 +523,12 @@ export async function addCheckoutOrder(input: {
   const pkg =
     (await sbGetPackage(input.packageSlug, true)) ||
     store.packages.find((p) => p.slug === input.packageSlug);
+  const isInvoice = input.packageSlug === "invoice-request";
   const id = `ord_${Date.now()}`;
+  const fallbackNumber = `TC-${String(Date.now()).slice(-5)}`;
   const order: AdminOrder = {
     id,
+    orderNumber: fallbackNumber,
     createdAt: new Date().toISOString(),
     firstName: input.firstName,
     surname: input.surname,
@@ -533,14 +537,18 @@ export async function addCheckoutOrder(input: {
     location: input.location,
     country: input.country,
     packageSlug: input.packageSlug,
-    packageName: pkg?.name || input.packageSlug,
+    packageName: isInvoice
+      ? "Invoice request"
+      : pkg?.name || input.packageSlug,
     cvColor: input.cvColor,
     cvUrl: input.cvUrl,
     pictureUrl: input.pictureUrl,
-    amount: packageAmount(
-      input.packageSlug,
-      pkg ? [pkg, ...store.packages] : store.packages,
-    ),
+    amount: isInvoice
+      ? 0
+      : packageAmount(
+          input.packageSlug,
+          pkg ? [pkg, ...store.packages] : store.packages,
+        ),
     status: "pending",
     assignedWriter: store.writers[0]?.name || null,
   };
@@ -551,6 +559,15 @@ export async function addCheckoutOrder(input: {
     whatsapp: input.whatsapp,
     country: input.country,
   });
+
+  if (savedToSb) {
+    order.id = savedToSb.id;
+    order.orderNumber = savedToSb.orderNumber;
+  } else if (isSupabaseConfigured()) {
+    throw new Error(
+      "Could not save this order to the database. Please try again or WhatsApp us.",
+    );
+  }
 
   store.orders.unshift(order);
 

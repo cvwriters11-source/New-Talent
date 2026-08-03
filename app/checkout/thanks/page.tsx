@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: Promise<{ package?: string }>;
+  searchParams: Promise<{ package?: string; order?: string }>;
 };
 
 export default async function CheckoutThanksPage({ searchParams }: Props) {
-  const { package: packageSlug } = await searchParams;
+  const { package: packageSlug, order: orderNumber } = await searchParams;
   const pkg = packageSlug ? await getPackageBySlug(packageSlug) : undefined;
 
   return (
@@ -24,20 +24,32 @@ export default async function CheckoutThanksPage({ searchParams }: Props) {
         <h1 className="mt-3 text-3xl text-ink sm:text-4xl">
           Order received
         </h1>
+        {orderNumber ? (
+          <p className="mt-5 text-lg font-bold tracking-wide text-teal">
+            Order number: {orderNumber}
+          </p>
+        ) : null}
         <p className="mt-4 text-base leading-relaxed text-muted">
           {pkg
             ? `We’ve received your ${pkg.name} order.`
             : "We’ve received your Career Development order."}{" "}
           Our team will confirm your quote and send payment instructions by
           WhatsApp or email shortly.
+          {orderNumber
+            ? " Please keep your order number handy when you follow up."
+            : null}
         </p>
         <p className="mt-4 text-sm font-semibold text-ink">{site.signature}</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <ButtonLink
             href={whatsappLink(
-              pkg
-                ? `Hi Talent Crafters — I just submitted a checkout for ${pkg.name}.`
-                : "Hi Talent Crafters — I just submitted a checkout order.",
+              orderNumber
+                ? pkg
+                  ? `Hi Talent Crafters — I just submitted checkout ${orderNumber} for ${pkg.name}.`
+                  : `Hi Talent Crafters — I just submitted checkout ${orderNumber}.`
+                : pkg
+                  ? `Hi Talent Crafters — I just submitted a checkout for ${pkg.name}.`
+                  : "Hi Talent Crafters — I just submitted a checkout order.",
             )}
             className="px-6 py-3.5"
             external

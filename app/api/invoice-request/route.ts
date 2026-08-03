@@ -2,25 +2,19 @@ import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
-import { addCheckoutOrder, getPackageBySlug } from "@/lib/admin/store";
-import type { CareerPackage } from "@/lib/packages";
-import { site } from "@/lib/site";
+import { addCheckoutOrder } from "@/lib/admin/store";
 
 export const runtime = "nodejs";
 
+const INVOICE_EMAIL = "sam@creative-cv.co.za";
 const MAX_CV_BYTES = 8 * 1024 * 1024;
 const MAX_PICTURE_BYTES = 5 * 1024 * 1024;
 
-const checkoutFieldsSchema = z.object({
+const fieldsSchema = z.object({
   firstName: z.string().trim().min(1).max(80),
   surname: z.string().trim().min(1).max(80),
-  whatsapp: z.string().trim().min(7).max(40),
-  email: z.string().trim().email().max(200),
-  location: z.string().trim().min(2).max(120),
-  country: z.string().trim().min(2).max(120),
-  packageSlug: z.string().trim().min(1).max(80),
-  cvColor: z.string().trim().max(40).nullable().optional(),
-  acceptTerms: z.literal("yes"),
+  countryCode: z.string().trim().regex(/^\+\d{1,4}$/),
+  whatsapp: z.string().trim().min(6).max(20),
 });
 
 const CV_TYPES = new Set([
@@ -31,19 +25,6 @@ const CV_TYPES = new Set([
 ]);
 
 const PICTURE_TYPES = new Set(["image/jpeg", "image/png", "image/jpg"]);
-
-function resolvePackageLabel(pkg: CareerPackage | undefined, slug: string): string {
-  if (!pkg) return slug;
-  return pkg.subtitle ? `${pkg.name} (${pkg.subtitle})` : pkg.name;
-}
-
-function resolveColorLabel(
-  pkg: CareerPackage | undefined,
-  colorId?: string | null,
-): string | null {
-  if (!colorId) return null;
-  return pkg?.colorOptions?.find((c) => c.id === colorId)?.label || colorId;
-}
 
 function isAllowedCv(file: File) {
   const name = file.name.toLowerCase();
@@ -65,10 +46,16 @@ function isAllowedPicture(file: File) {
   );
 }
 
+function normalizeWhatsapp(countryCode: string, raw: string) {
+  const digits = raw.replace(/\D/g, "").replace(/^0+/, "");
+  const codeDigits = countryCode.replace(/\D/g, "");
+  return `+${codeDigits}${digits}`;
+}
+
 async function uploadIfConfigured(file: File, folder: string) {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
   const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-  const blob = await put(`checkout/${folder}/${Date.now()}-${safeName}`, file, {
+  const blob = await put(`invoice/${folder}/${Date.now()}-${safeName}`, file, {
     access: "public",
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
@@ -80,56 +67,25 @@ export async function POST(request: Request) {
   try {
     form = await request.formData();
   } catch {
-    return NextResponse.json({ error: "Invalid form data." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const parsed = checkoutFieldsSchema.safeParse({
+  const parsed = fieldsSchema.safeParse({
     firstName: form.get("firstName"),
     surname: form.get("surname"),
+    countryCode: form.get("countryCode"),
     whatsapp: form.get("whatsapp"),
-    email: form.get("email"),
-    location: form.get("location"),
-    country: form.get("country"),
-    packageSlug: form.get("packageSlug"),
-    cvColor: form.get("cvColor") || null,
-    acceptTerms: form.get("acceptTerms"),
   });
-
   if (!parsed.success) {
-    const issue = parsed.error.issues[0];
     return NextResponse.json(
-      {
-        error:
-          issue?.message ||
-          "Please check the form fields and try again.",
-      },
+      { error: "Please check your name and WhatsApp number." },
       { status: 400 },
     );
-  }
-
-  const data = parsed.data;
-  const pkg = await getPackageBySlug(data.packageSlug);
-  if (!pkg) {
-    return NextResponse.json({ error: "Invalid package." }, { status: 400 });
-  }
-  if (pkg.colorOptions?.length) {
-    const valid = pkg.colorOptions.some((c) => c.id === data.cvColor);
-    if (!valid) {
-      return NextResponse.json(
-        { error: "Please choose a CV colour for this package." },
-        { status: 400 },
-      );
-    }
   }
 
   const cv = form.get("cv");
-  const picture = form.get("picture");
-
   if (!(cv instanceof File) || cv.size === 0) {
-    return NextResponse.json(
-      { error: "Please upload your CV (PDF, DOC, or DOCX)." },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Please upload your CV." }, { status: 400 });
   }
   if (!isAllowedCv(cv)) {
     return NextResponse.json(
@@ -139,27 +95,32 @@ export async function POST(request: Request) {
   }
   if (cv.size > MAX_CV_BYTES) {
     return NextResponse.json(
-      { error: "CV must be 8MB or smaller." },
+      { error: "CV must be under 8MB." },
       { status: 400 },
     );
   }
 
-  let pictureFile: File | null = null;
-  if (picture instanceof File && picture.size > 0) {
-    if (!isAllowedPicture(picture)) {
+  const pictureRaw = form.get("picture");
+  const pictureFile =
+    pictureRaw instanceof File && pictureRaw.size > 0 ? pictureRaw : null;
+  if (pictureFile) {
+    if (!isAllowedPicture(pictureFile)) {
       return NextResponse.json(
-        { error: "Picture must be a JPG or PNG file." },
+        { error: "Picture must be a JPG or PNG." },
         { status: 400 },
       );
     }
-    if (picture.size > MAX_PICTURE_BYTES) {
+    if (pictureFile.size > MAX_PICTURE_BYTES) {
       return NextResponse.json(
-        { error: "Picture must be 5MB or smaller." },
+        { error: "Picture must be under 5MB." },
         { status: 400 },
       );
     }
-    pictureFile = picture;
   }
+
+  const data = parsed.data;
+  const whatsapp = normalizeWhatsapp(data.countryCode, data.whatsapp);
+  const placeholderEmail = `invoice.${Date.now()}@talentcrafters.local`;
 
   let cvUrl: string | null = null;
   let pictureUrl: string | null = null;
@@ -169,73 +130,62 @@ export async function POST(request: Request) {
       pictureUrl = await uploadIfConfigured(pictureFile, "pictures");
     }
   } catch (err) {
-    console.error("[checkout] Blob upload failed", err);
+    console.error("[invoice-request] Blob upload failed", err);
     return NextResponse.json(
       { error: "Could not upload files. Please try again." },
-      { status: 502 },
+      { status: 500 },
     );
   }
-
-  const packageLabel = resolvePackageLabel(pkg, data.packageSlug);
-  const colorLabel = resolveColorLabel(pkg, data.cvColor);
 
   let order;
   try {
     order = await addCheckoutOrder({
       firstName: data.firstName,
       surname: data.surname,
-      email: data.email,
-      whatsapp: data.whatsapp,
-      location: data.location,
-      country: data.country,
-      packageSlug: data.packageSlug,
-      cvColor: colorLabel,
+      email: placeholderEmail,
+      whatsapp,
+      location: "Invoice request",
+      country: data.countryCode,
+      packageSlug: "invoice-request",
       cvUrl,
       pictureUrl,
     });
   } catch (err) {
-    console.error("[checkout] admin store failed", err);
+    console.error("[invoice-request] admin store failed", err);
     return NextResponse.json(
       {
         error:
           err instanceof Error
             ? err.message
-            : "Could not save this order. Please try WhatsApp.",
+            : "Could not save this request. Please try WhatsApp.",
       },
       { status: 502 },
     );
   }
 
-  const to = process.env.CONTACT_EMAIL || site.email;
-  const subject = `Order ${order.orderNumber} — ${packageLabel}`;
   const text = [
-    `New Career Development checkout order`,
+    `New invoice request from Talent Crafters contact page`,
     ``,
     `Order number: ${order.orderNumber}`,
     `Name: ${data.firstName} ${data.surname}`,
-    `Email: ${data.email}`,
-    `WhatsApp: ${data.whatsapp}`,
-    `Location: ${data.location}`,
-    `Country: ${data.country}`,
-    `Package: ${packageLabel}`,
-    colorLabel ? `CV colour: ${colorLabel}` : null,
-    `Terms accepted: yes`,
+    `WhatsApp: ${whatsapp}`,
+    `Country code: ${data.countryCode}`,
     ``,
     `CV file: ${cv.name} (${Math.round(cv.size / 1024)} KB)`,
-    cvUrl ? `CV URL: ${cvUrl}` : "CV URL: not uploaded (BLOB_READ_WRITE_TOKEN missing)",
+    cvUrl ? `CV URL: ${cvUrl}` : "CV URL: attached / not uploaded to blob",
     pictureFile
       ? `Picture file: ${pictureFile.name} (${Math.round(pictureFile.size / 1024)} KB)`
       : "Picture: not provided",
     pictureUrl ? `Picture URL: ${pictureUrl}` : null,
     ``,
-    `Follow up with quote and payment instructions.`,
+    `Please send an invoice and follow up on WhatsApp.`,
   ]
     .filter(Boolean)
     .join("\n");
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.info("[checkout] RESEND_API_KEY missing — logging order only.");
+    console.info("[invoice-request] RESEND_API_KEY missing — logging only.");
     console.info(text);
     return NextResponse.json({
       ok: true,
@@ -266,17 +216,16 @@ export async function POST(request: Request) {
 
     const { error } = await resend.emails.send({
       from,
-      to: [to],
-      replyTo: data.email,
-      subject,
+      to: [INVOICE_EMAIL],
+      subject: `Invoice request ${order.orderNumber} — ${data.firstName} ${data.surname}`,
       text,
       attachments: attachments.length ? attachments : undefined,
     });
 
     if (error) {
-      console.error("[checkout] Resend error", error);
+      console.error("[invoice-request] Resend error", error);
       return NextResponse.json(
-        { error: "Could not submit order right now. Please try WhatsApp." },
+        { error: "Could not send request right now. Please try WhatsApp." },
         { status: 502 },
       );
     }
@@ -287,9 +236,9 @@ export async function POST(request: Request) {
       orderId: order.id,
     });
   } catch (err) {
-    console.error("[checkout] Unexpected error", err);
+    console.error("[invoice-request] Unexpected error", err);
     return NextResponse.json(
-      { error: "Could not submit order right now. Please try WhatsApp." },
+      { error: "Could not send request right now. Please try WhatsApp." },
       { status: 500 },
     );
   }

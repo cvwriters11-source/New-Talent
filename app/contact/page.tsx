@@ -9,16 +9,16 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <div className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-[#eef2f7]">
+    <div className="relative min-h-[calc(100svh-5rem)] overflow-hidden bg-[#f4f6f8]">
       <div
-        className="pointer-events-none absolute inset-0 opacity-70"
+        className="pointer-events-none absolute inset-0"
         aria-hidden
         style={{
           backgroundImage:
-            "radial-gradient(circle at 50% 18%, rgba(200,16,46,0.06), transparent 42%), radial-gradient(circle at 80% 80%, rgba(11,31,58,0.08), transparent 40%), radial-gradient(circle at 15% 70%, rgba(11,31,58,0.05), transparent 35%)",
+            "radial-gradient(circle at 50% 30%, rgba(255,255,255,0.9), transparent 55%)",
         }}
       />
-      <section className="relative mx-auto max-w-6xl px-5 py-12 md:px-8 md:py-16 lg:py-20">
+      <section className="relative mx-auto max-w-6xl px-3 py-8 sm:px-5 sm:py-12 md:px-8 md:py-16">
         <ContactQuoteHub />
       </section>
     </div>

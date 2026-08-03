@@ -1,5 +1,6 @@
 import nextDynamic from "next/dynamic";
 import Link from "next/link";
+import { CanadianFlagLoader } from "@/components/CanadianFlagLoader";
 import { PackagePricingGrid } from "@/components/PackagePricingGrid";
 import { listPackages } from "@/lib/admin/store";
 import { getGeoPricing } from "@/lib/geo-pricing";
@@ -8,7 +9,9 @@ const HeroSlideshow = nextDynamic(
   () => import("@/components/HeroSlideshow").then((m) => m.HeroSlideshow),
   {
     loading: () => (
-      <section className="min-h-[70svh] bg-ink sm:min-h-[78svh]" aria-hidden />
+      <section className="min-h-[70svh] sm:min-h-[78svh]" aria-hidden>
+        <CanadianFlagLoader label="Loading Talent Crafters…" />
+      </section>
     ),
   },
 );

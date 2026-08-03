@@ -50,11 +50,16 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
         method: "POST",
         body: data,
       });
-      const json = (await res.json()) as { error?: string };
+      const json = (await res.json()) as {
+        error?: string;
+        orderNumber?: string;
+      };
       if (!res.ok) {
         throw new Error(json.error || "Something went wrong. Please try again.");
       }
-      router.push(`/checkout/thanks?package=${encodeURIComponent(pkg.slug)}`);
+      const params = new URLSearchParams({ package: pkg.slug });
+      if (json.orderNumber) params.set("order", json.orderNumber);
+      router.push(`/checkout/thanks?${params.toString()}`);
     } catch (err) {
       setStatus("error");
       setError(err instanceof Error ? err.message : "Failed to submit order.");

@@ -32,6 +32,7 @@ type PackageRow = {
 
 type OrderRow = {
   id: string;
+  order_number: string | null;
   created_at: string;
   completed_at: string | null;
   first_name: string;
@@ -136,6 +137,7 @@ function toPackageRow(pkg: CareerPackage, sortOrder = 0): Record<string, unknown
 export function mapOrderRow(row: OrderRow): AdminOrder {
   return {
     id: row.id,
+    orderNumber: row.order_number || row.id,
     createdAt: row.created_at,
     completedAt: row.completed_at,
     firstName: row.first_name,
@@ -373,60 +375,107 @@ export async function sbAddCheckoutOrder(order: AdminOrder, customer: {
   email: string;
   whatsapp: string;
   country: string;
-}) {
-  if (!isSupabaseConfigured()) return null;
-  const client = isSupabaseAdminConfigured()
-    ? createAdminClient()
-    : createAnonClient();
+}): Promise<{ id: string; orderNumber: string } | null> {
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
 
-  const { error: orderError } = await client.from("tc_orders").insert({
-    id: order.id,
-    created_at: order.createdAt,
-    completed_at: order.completedAt || null,
-    first_name: order.firstName,
-    surname: order.surname,
-    email: order.email,
-    whatsapp: order.whatsapp,
-    location: order.location,
-    country: order.country,
-    package_slug: order.packageSlug,
-    package_name: order.packageName,
-    cv_color: order.cvColor || null,
-    cv_url: order.cvUrl || null,
-    picture_url: order.pictureUrl || null,
-    amount: order.amount,
-    status: order.status,
-    assigned_writer: order.assignedWriter || null,
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    // Leave order_number null so the DB trigger assigns TC-xxxxx from the sequence.
+    const { data: inserted, error: orderError } = await client
+      .from("tc_orders")
+      .insert({
+        id: order.id,
+        order_number: null,
+        created_at: order.createdAt,
+        completed_at: order.completedAt || null,
+        first_name: order.firstName,
+        surname: order.surname,
+        email: order.email,
+        whatsapp: order.whatsapp,
+        location: order.location,
+        country: order.country,
+        package_slug: order.packageSlug,
+        package_name: order.packageName,
+        cv_color: order.cvColor || null,
+        cv_url: order.cvUrl || null,
+        picture_url: order.pictureUrl || null,
+        amount: order.amount,
+        status: order.status,
+        assigned_writer: order.assignedWriter || null,
+      })
+      .select("id, order_number")
+      .single();
+    if (orderError || !inserted) {
+      console.warn(
+        "[supabase] insert order failed",
+        orderError?.message || "no row returned",
+      );
+      return null;
+    }
+
+    const { data: existing } = await client
+      .from("tc_customers")
+      .select("*")
+      .ilike("email", customer.email)
+      .maybeSingle();
+
+    if (existing) {
+      await client
+        .from("tc_customers")
+        .update({ orders: (existing.orders || 0) + 1 })
+        .eq("id", existing.id);
+    } else {
+      await client.from("tc_customers").insert({
+        id: `cus_${Date.now()}`,
+        name: customer.name,
+        email: customer.email,
+        whatsapp: customer.whatsapp,
+        country: customer.country,
+        orders: 1,
+        created_at: order.createdAt,
+      });
+    }
+
+    return {
+      id: inserted.id as string,
+      orderNumber: (inserted.order_number as string) || order.orderNumber,
+    };
+  }
+
+  if (!isSupabaseConfigured() || !writeKey) return null;
+
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_create_checkout_order", {
+    payload: {
+      id: order.id,
+      created_at: order.createdAt,
+      first_name: order.firstName,
+      surname: order.surname,
+      email: order.email,
+      whatsapp: order.whatsapp,
+      location: order.location,
+      country: order.country,
+      package_slug: order.packageSlug,
+      package_name: order.packageName,
+      cv_color: order.cvColor || null,
+      cv_url: order.cvUrl || null,
+      picture_url: order.pictureUrl || null,
+      amount: order.amount,
+      status: order.status,
+      assigned_writer: order.assignedWriter || null,
+      customer_name: customer.name,
+    },
+    write_key: writeKey,
   });
-  if (orderError) {
-    console.warn("[supabase] insert order failed", orderError.message);
+
+  if (error) {
+    console.warn("[supabase] create order rpc failed", error.message);
     return null;
   }
 
-  const { data: existing } = await client
-    .from("tc_customers")
-    .select("*")
-    .ilike("email", customer.email)
-    .maybeSingle();
-
-  if (existing) {
-    await client
-      .from("tc_customers")
-      .update({ orders: (existing.orders || 0) + 1 })
-      .eq("id", existing.id);
-  } else {
-    await client.from("tc_customers").insert({
-      id: `cus_${Date.now()}`,
-      name: customer.name,
-      email: customer.email,
-      whatsapp: customer.whatsapp,
-      country: customer.country,
-      orders: 1,
-      created_at: order.createdAt,
-    });
-  }
-
-  return true;
+  const result = data as { id?: string; order_number?: string } | null;
+  if (!result?.id || !result.order_number) return null;
+  return { id: result.id, orderNumber: result.order_number };
 }
 
 export async function sbUpdateOrderStatus(id: string, status: OrderStatus) {

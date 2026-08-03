@@ -41,6 +41,7 @@ export function OrdersTable({ orders }: { orders: AdminOrder[] }) {
         <table className="min-w-full text-left text-sm">
           <thead className="bg-[#f8fafc] text-xs uppercase tracking-wide text-muted">
             <tr>
+              <th className="px-4 py-3">Order #</th>
               <th className="px-4 py-3">Customer</th>
               <th className="px-4 py-3">Package</th>
               <th className="px-4 py-3">Amount</th>
@@ -51,6 +52,11 @@ export function OrdersTable({ orders }: { orders: AdminOrder[] }) {
           <tbody>
             {orders.map((order) => (
               <tr key={order.id} className="border-t border-line align-top">
+                <td className="px-4 py-3">
+                  <p className="font-bold tracking-wide text-teal">
+                    {order.orderNumber || order.id}
+                  </p>
+                </td>
                 <td className="px-4 py-3">
                   <p className="font-semibold">
                     {order.firstName} {order.surname}

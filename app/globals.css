@@ -152,9 +152,44 @@ h3,
   background: linear-gradient(90deg, var(--maple), transparent);
 }
 
+@keyframes canada-flag-wave {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 12px 40px rgba(200, 16, 46, 0.18);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 16px 48px rgba(200, 16, 46, 0.28);
+  }
+}
+
+@keyframes canada-maple-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.72;
+    transform: scale(0.94);
+  }
+}
+
+.canada-flag-loader {
+  animation: canada-flag-wave 1.6s ease-in-out infinite;
+}
+
+.canada-maple-pulse {
+  animation: canada-maple-pulse 1.2s ease-in-out infinite;
+  transform-origin: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
-  .animate-fade-in {
+  .animate-fade-in,
+  .canada-flag-loader,
+  .canada-maple-pulse {
     animation: none;
   }
 }
