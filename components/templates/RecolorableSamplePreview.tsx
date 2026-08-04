@@ -70,9 +70,9 @@ export function RecolorableSamplePreview({
 
   useEffect(() => {
     if (!inView || !needsRecolor) {
-      setReady(false);
       originalRef.current = null;
-      return;
+      const reset = window.setTimeout(() => setReady(false), 0);
+      return () => window.clearTimeout(reset);
     }
 
     let cancelled = false;

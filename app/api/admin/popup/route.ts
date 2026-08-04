@@ -34,6 +34,10 @@ async function savePopupImage(file: File): Promise<string> {
     return blob.url;
   }
 
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    throw new Error("BLOB_REQUIRED");
+  }
+
   const dir = path.join(process.cwd(), "public", "uploads", "popup");
   await fs.mkdir(dir, { recursive: true });
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -105,10 +109,11 @@ export async function PUT(request: Request) {
       imageUrl = await savePopupImage(image);
     } catch (err) {
       console.error("[popup] image upload failed", err);
-      return NextResponse.json(
-        { error: "Could not upload image. Try again." },
-        { status: 502 },
-      );
+      const message =
+        err instanceof Error && err.message === "BLOB_REQUIRED"
+          ? "Image upload requires BLOB_READ_WRITE_TOKEN on Vercel."
+          : "Could not upload image. Try again.";
+      return NextResponse.json({ error: message }, { status: 502 });
     }
   } else if (imageUrlField) {
     imageUrl = imageUrlField;

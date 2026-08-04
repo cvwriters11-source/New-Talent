@@ -18,13 +18,26 @@ export function OrdersTable({ orders }: { orders: AdminOrder[] }) {
 
   async function updateStatus(id: string, status: OrderStatus) {
     setBusyId(id);
-    await fetch("/api/admin/orders", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
-    });
-    setBusyId(null);
-    router.refresh();
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }),
+      });
+      if (!res.ok) {
+        const json = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(json?.error || "Could not update order status.");
+      }
+      router.refresh();
+    } catch (err) {
+      window.alert(
+        err instanceof Error ? err.message : "Could not update order status.",
+      );
+    } finally {
+      setBusyId(null);
+    }
   }
 
   if (orders.length === 0) {

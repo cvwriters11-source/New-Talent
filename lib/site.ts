@@ -24,7 +24,7 @@ export const site = {
     {
       id: "linkedin-recruitment",
       label: "LinkedIn Recruitment",
-      href: "https://za.linkedin.com/company/job-seekes",
+      href: "https://za.linkedin.com/company/job-seekers",
     },
   ],
 } as const;

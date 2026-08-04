@@ -41,16 +41,17 @@ export function CanadaChatWidget() {
   const engagedRef = useRef(false);
 
   useEffect(() => {
-    if (open) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!open) return;
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const clearUnread = window.setTimeout(() => {
       setUnread(false);
       setPreviewOpen(false);
-    }
+    }, 0);
+    return () => window.clearTimeout(clearUnread);
   }, [messages, open, busy]);
 
   useEffect(() => {
     let cancelled = false;
-    let timer: number | undefined;
 
     try {
       if (sessionStorage.getItem(PROACTIVE_KEY) === "1") return;
@@ -58,11 +59,11 @@ export function CanadaChatWidget() {
       /* ignore */
     }
 
-    timer = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       if (cancelled || engagedRef.current) return;
 
       const proactive: ChatMessage = {
-        id: `a-proactive-${Date.now()}`,
+        id: `a-proactive-${crypto.randomUUID()}`,
         role: "assistant",
         content: PROACTIVE_MESSAGE,
       };
@@ -92,7 +93,7 @@ export function CanadaChatWidget() {
     setPreviewOpen(false);
 
     const userMsg: ChatMessage = {
-      id: `u-${Date.now()}`,
+      id: `u-${crypto.randomUUID()}`,
       role: "user",
       content: trimmed,
     };
@@ -120,7 +121,7 @@ export function CanadaChatWidget() {
       setMessages((prev) => [
         ...prev,
         {
-          id: `a-${Date.now()}`,
+          id: `a-${crypto.randomUUID()}`,
           role: "assistant",
           content: json.reply!,
         },

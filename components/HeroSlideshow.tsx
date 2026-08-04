@@ -49,26 +49,18 @@ const slides = [
 
 export function HeroSlideshow() {
   const [index, setIndex] = useState(0);
-  const [mounted, setMounted] = useState(false);
   const active = slides[index];
   const nextIndex = (index + 1) % slides.length;
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
     const id = window.setInterval(() => {
       setIndex((current) => (current + 1) % slides.length);
     }, 6000);
     return () => window.clearInterval(id);
-  }, [mounted]);
+  }, []);
 
   // Only keep active + next slide in the DOM to cut downloads and paint cost.
-  const visibleIndexes = mounted
-    ? Array.from(new Set([index, nextIndex]))
-    : [0];
+  const visibleIndexes = Array.from(new Set([index, nextIndex]));
 
   return (
     <section className="relative isolate min-h-[70svh] overflow-hidden sm:min-h-[78svh]">

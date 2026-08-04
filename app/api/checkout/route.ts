@@ -275,22 +275,27 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("[checkout] Resend error", error);
-      return NextResponse.json(
-        { error: "Could not submit order right now. Please try WhatsApp." },
-        { status: 502 },
-      );
+      return NextResponse.json({
+        ok: true,
+        emailSent: false,
+        orderNumber: order.orderNumber,
+        orderId: order.id,
+      });
     }
 
     return NextResponse.json({
       ok: true,
+      emailSent: true,
       orderNumber: order.orderNumber,
       orderId: order.id,
     });
   } catch (err) {
-    console.error("[checkout] Unexpected error", err);
-    return NextResponse.json(
-      { error: "Could not submit order right now. Please try WhatsApp." },
-      { status: 500 },
-    );
+    console.error("[checkout] Unexpected email error", err);
+    return NextResponse.json({
+      ok: true,
+      emailSent: false,
+      orderNumber: order.orderNumber,
+      orderId: order.id,
+    });
   }
 }

@@ -37,6 +37,10 @@ async function saveCompanyLogo(file: File): Promise<string> {
     return blob.url;
   }
 
+  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+    throw new Error("BLOB_REQUIRED");
+  }
+
   const dir = path.join(process.cwd(), "public", "uploads", "recruiters");
   await fs.mkdir(dir, { recursive: true });
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -98,10 +102,11 @@ export async function POST(request: Request) {
     logoUrl = await saveCompanyLogo(logo);
   } catch (err) {
     console.error("[recruiter] logo upload failed", err);
-    return NextResponse.json(
-      { error: "Could not upload logo. Try again." },
-      { status: 500 },
-    );
+    const message =
+      err instanceof Error && err.message === "BLOB_REQUIRED"
+        ? "Logo upload is not configured. Please contact support."
+        : "Could not upload logo. Try again.";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 
   try {
@@ -137,6 +142,18 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "An account with this email already exists." },
         { status: 409 },
+      );
+    }
+    if (
+      err instanceof Error &&
+      err.message === "SUPABASE_SERVICE_ROLE_REQUIRED"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Recruiter registration is temporarily unavailable. Please try again later.",
+        },
+        { status: 503 },
       );
     }
     console.error(err);

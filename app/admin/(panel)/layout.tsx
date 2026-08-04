@@ -2,6 +2,19 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { getAdminSession } from "@/lib/admin/auth";
+import { adminNav } from "@/lib/admin/nav";
+
+const mobileNav = adminNav.filter((item) =>
+  [
+    "/admin",
+    "/admin/orders",
+    "/admin/packages",
+    "/admin/recruiters",
+    "/admin/job-posts",
+    "/admin/popup",
+    "/admin/settings",
+  ].includes(item.href),
+);
 
 export default async function AdminPanelLayout({
   children,
@@ -21,19 +34,13 @@ export default async function AdminPanelLayout({
           <p className="text-sm font-bold">Talent Crafters Admin</p>
           <p className="truncate text-[11px] text-white/60">{session.email}</p>
           <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {[
-              ["/admin", "Dashboard"],
-              ["/admin/orders", "Orders"],
-              ["/admin/packages", "Packages"],
-              ["/admin/popup", "Popup"],
-              ["/admin/settings", "Settings"],
-            ].map(([href, label]) => (
+            {mobileNav.map((item) => (
               <Link
-                key={href}
-                href={href}
+                key={item.href}
+                href={item.href}
                 className="shrink-0 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold"
               >
-                {label}
+                {item.label}
               </Link>
             ))}
           </div>

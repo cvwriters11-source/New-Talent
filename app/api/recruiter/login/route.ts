@@ -24,27 +24,47 @@ export async function POST(request: Request) {
     );
   }
 
-  const recruiter = await authenticateRecruiter(email, password);
-  if (!recruiter) {
+  try {
+    const recruiter = await authenticateRecruiter(email, password);
+    if (!recruiter) {
+      return NextResponse.json(
+        { error: "Invalid email or password." },
+        { status: 401 },
+      );
+    }
+
+    const token = await createRecruiterToken({
+      id: recruiter.id,
+      email: recruiter.email,
+      name: recruiter.name,
+      company: recruiter.company,
+    });
+    const res = NextResponse.json({ ok: true });
+    res.cookies.set(RECRUITER_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 14,
+    });
+    return res;
+  } catch (err) {
+    if (
+      err instanceof Error &&
+      err.message === "SUPABASE_SERVICE_ROLE_REQUIRED"
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Recruiter login is temporarily unavailable. Please try again later.",
+        },
+        { status: 503 },
+      );
+    }
+    console.error(err);
     return NextResponse.json(
-      { error: "Invalid email or password." },
-      { status: 401 },
+      { error: "Could not sign in right now." },
+      { status: 500 },
     );
   }
-
-  const token = await createRecruiterToken({
-    id: recruiter.id,
-    email: recruiter.email,
-    name: recruiter.name,
-    company: recruiter.company,
-  });
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(RECRUITER_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 14,
-  });
-  return res;
 }

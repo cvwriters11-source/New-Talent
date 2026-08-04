@@ -26,10 +26,22 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid order update." }, { status: 400 });
   }
 
-  const order = await updateOrderStatus(body.id, body.status as OrderStatus);
-  if (!order) {
-    return NextResponse.json({ error: "Order not found." }, { status: 404 });
+  try {
+    const order = await updateOrderStatus(body.id, body.status as OrderStatus);
+    if (!order) {
+      return NextResponse.json({ error: "Order not found." }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true, order });
+  } catch (err) {
+    console.error("[admin/orders]", err);
+    return NextResponse.json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : "Could not update order status.",
+      },
+      { status: 502 },
+    );
   }
-
-  return NextResponse.json({ ok: true, order });
 }

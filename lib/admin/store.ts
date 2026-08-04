@@ -268,7 +268,6 @@ function ensurePopup(store: AdminStore) {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __tcAdminStore: AdminStore | undefined;
 }
 
@@ -350,7 +349,7 @@ export async function getStore(): Promise<AdminStore> {
 
 export async function listPackages(options?: { includeInactive?: boolean }) {
   const fromSb = await sbListPackages(Boolean(options?.includeInactive));
-  if (fromSb) {
+  if (fromSb && fromSb.length > 0) {
     if (options?.includeInactive) return fromSb;
     return fromSb.filter((pkg) => pkg.active !== false);
   }
@@ -366,7 +365,6 @@ export async function getPackageBySlug(
 ) {
   const fromSb = await sbGetPackage(slug, Boolean(options?.includeInactive));
   if (fromSb) return fromSb;
-  if (fromSb === undefined) return undefined;
 
   const store = await getStore();
   ensurePackages(store);
@@ -607,6 +605,12 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
       );
     }
     return fromSb;
+  }
+  if (fromSb === undefined) return null;
+  if (isSupabaseConfigured()) {
+    throw new Error(
+      "Could not update this order in the database. Check TC_DB_WRITE_KEY / service role.",
+    );
   }
 
   const store = await getStore();

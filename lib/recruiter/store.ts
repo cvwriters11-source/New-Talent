@@ -150,6 +150,12 @@ function newId() {
   return crypto.randomUUID();
 }
 
+function requireRecruiterPersistence() {
+  if (isSupabaseConfigured() && !isSupabaseAdminConfigured()) {
+    throw new Error("SUPABASE_SERVICE_ROLE_REQUIRED");
+  }
+}
+
 export async function registerRecruiter(input: {
   name: string;
   email: string;
@@ -166,6 +172,7 @@ export async function registerRecruiter(input: {
   const passwordHash = hashPassword(input.password);
 
   if (!logoUrl) throw new Error("LOGO_REQUIRED");
+  requireRecruiterPersistence();
 
   if (isSupabaseAdminConfigured()) {
     const sb = createAdminClient();
@@ -218,6 +225,7 @@ export async function authenticateRecruiter(
   password: string,
 ): Promise<Recruiter | null> {
   const email = emailRaw.trim().toLowerCase();
+  requireRecruiterPersistence();
 
   if (isSupabaseAdminConfigured()) {
     const sb = createAdminClient();
@@ -285,6 +293,7 @@ export async function updateRecruiterVerification(
   const now = new Date().toISOString();
   const verifiedAt = status === "approved" ? now : null;
   const verificationNote = note?.trim() || null;
+  requireRecruiterPersistence();
 
   if (isSupabaseAdminConfigured()) {
     const sb = createAdminClient();
@@ -324,6 +333,7 @@ export async function createJob(input: {
   companyLogoUrl: string;
 }): Promise<JobPost> {
   const now = new Date().toISOString();
+  requireRecruiterPersistence();
   if (isSupabaseAdminConfigured()) {
     const sb = createAdminClient();
     const { data, error } = await sb
@@ -389,6 +399,7 @@ export async function updateJob(
   options?: { recruiterId?: string },
 ): Promise<JobPost | null> {
   const now = new Date().toISOString();
+  requireRecruiterPersistence();
 
   if (isSupabaseAdminConfigured()) {
     const sb = createAdminClient();

@@ -204,8 +204,11 @@ export async function sbGetPackage(slug: string, includeInactive = false) {
   const client = isSupabaseAdminConfigured()
     ? createAdminClient()
     : createAnonClient();
-  let query = client.from("tc_packages").select("*").eq("slug", slug).maybeSingle();
-  const { data, error } = await query;
+  const { data, error } = await client
+    .from("tc_packages")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
   if (error) {
     console.warn("[supabase] get package failed", error.message);
     return null;
@@ -228,11 +231,12 @@ export async function sbUpsertPackage(
     const client = createAdminClient();
 
     if (oldSlug !== pkg.slug) {
-      const { error: delError } = await client
+      // Rename in place so order FKs cascade instead of delete+reinsert.
+      const { error: renameError } = await client
         .from("tc_packages")
-        .delete()
+        .update({ slug: pkg.slug })
         .eq("slug", oldSlug);
-      if (delError) throw new Error(delError.message);
+      if (renameError) throw new Error(renameError.message);
     }
 
     const { data: existing } = await client
@@ -267,11 +271,22 @@ export async function sbUpsertPackage(
   const client = createAnonClient();
 
   if (oldSlug !== pkg.slug) {
+    const { data, error } = await client.rpc("tc_upsert_package", {
+      payload: row,
+      write_key: writeKey,
+    });
+    if (error) throw new Error(error.message);
     const { error: delError } = await client.rpc("tc_delete_package", {
       p_slug: oldSlug,
       write_key: writeKey,
     });
-    if (delError) throw new Error(delError.message);
+    if (delError) {
+      console.warn(
+        "[supabase] old package slug delete skipped",
+        delError.message,
+      );
+    }
+    return mapPackageRow(data as PackageRow);
   }
 
   const { data, error } = await client.rpc("tc_upsert_package", {
@@ -343,28 +358,54 @@ export async function sbUpdatePopup(popup: SitePopup) {
 }
 
 export async function sbListOrders() {
-  if (!isSupabaseAdminConfigured()) return null;
-  const client = createAdminClient();
-  const { data, error } = await client
-    .from("tc_orders")
-    .select("*")
-    .order("created_at", { ascending: false });
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.warn("[supabase] list orders failed", error.message);
+      return null;
+    }
+    return (data as OrderRow[]).map(mapOrderRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_list_orders", {
+    write_key: writeKey,
+  });
   if (error) {
-    console.warn("[supabase] list orders failed", error.message);
+    console.warn("[supabase] list orders rpc failed", error.message);
     return null;
   }
   return (data as OrderRow[]).map(mapOrderRow);
 }
 
 export async function sbListCustomers() {
-  if (!isSupabaseAdminConfigured()) return null;
-  const client = createAdminClient();
-  const { data, error } = await client
-    .from("tc_customers")
-    .select("*")
-    .order("created_at", { ascending: false });
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_customers")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.warn("[supabase] list customers failed", error.message);
+      return null;
+    }
+    return (data as CustomerRow[]).map(mapCustomerRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_list_customers", {
+    write_key: writeKey,
+  });
   if (error) {
-    console.warn("[supabase] list customers failed", error.message);
+    console.warn("[supabase] list customers rpc failed", error.message);
     return null;
   }
   return (data as CustomerRow[]).map(mapCustomerRow);
@@ -479,20 +520,33 @@ export async function sbAddCheckoutOrder(order: AdminOrder, customer: {
 }
 
 export async function sbUpdateOrderStatus(id: string, status: OrderStatus) {
-  if (!isSupabaseAdminConfigured()) return null;
-  const client = createAdminClient();
-  const patch: Record<string, unknown> = { status };
-  if (status === "completed") {
-    patch.completed_at = new Date().toISOString();
-  } else {
-    patch.completed_at = null;
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const patch: Record<string, unknown> = { status };
+    if (status === "completed") {
+      patch.completed_at = new Date().toISOString();
+    } else {
+      patch.completed_at = null;
+    }
+    const { data, error } = await client
+      .from("tc_orders")
+      .update(patch)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return undefined;
+    return mapOrderRow(data as OrderRow);
   }
-  const { data, error } = await client
-    .from("tc_orders")
-    .update(patch)
-    .eq("id", id)
-    .select("*")
-    .maybeSingle();
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_update_order_status", {
+    p_id: id,
+    p_status: status,
+    write_key: writeKey,
+  });
   if (error) throw new Error(error.message);
   if (!data) return undefined;
   return mapOrderRow(data as OrderRow);

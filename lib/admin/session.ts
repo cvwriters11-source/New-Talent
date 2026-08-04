@@ -16,14 +16,26 @@ function getSecret() {
 }
 
 export function getAdminCredentials() {
-  return {
-    email: (process.env.ADMIN_EMAIL || "sam@talentcrafters.co.za").toLowerCase(),
-    password: process.env.ADMIN_PASSWORD || "Gospelman",
-  };
+  const email = (
+    process.env.ADMIN_EMAIL || "sam@talentcrafters.co.za"
+  ).toLowerCase();
+  const password = process.env.ADMIN_PASSWORD?.trim();
+  if (!password) {
+    if (
+      process.env.VERCEL_ENV === "production" ||
+      process.env.NODE_ENV === "production"
+    ) {
+      return { email, password: "" };
+    }
+    // Local/dev only fallback — never used when ADMIN_PASSWORD is configured.
+    return { email, password: "changeme-local-only" };
+  }
+  return { email, password };
 }
 
 export function verifyAdminCredentials(email: string, password: string) {
   const creds = getAdminCredentials();
+  if (!creds.password) return false;
   return (
     email.trim().toLowerCase() === creds.email && password === creds.password
   );
