@@ -48,51 +48,45 @@ function parseContext(raw: unknown): InterviewApiContext | null {
 
 function asTranscript(raw: unknown): TranscriptEntry[] {
   if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const row = item as Record<string, unknown>;
-      if (
-        typeof row.id !== "string" ||
-        (row.role !== "user" &&
-          row.role !== "assistant" &&
-          row.role !== "system") ||
-        typeof row.content !== "string"
-      ) {
-        return null;
-      }
-      return {
-        id: row.id,
-        role: row.role,
-        content: row.content,
-      };
-    })
-    .filter((v): v is TranscriptEntry => Boolean(v));
+  const out: TranscriptEntry[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    if (typeof row.id !== "string" || typeof row.content !== "string") continue;
+    if (
+      row.role !== "user" &&
+      row.role !== "assistant" &&
+      row.role !== "system"
+    ) {
+      continue;
+    }
+    out.push({ id: row.id, role: row.role, content: row.content });
+  }
+  return out;
 }
 
 function asAudioClips(raw: unknown): InterviewAudioClip[] {
   if (!Array.isArray(raw)) return [];
-  return raw
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const row = item as Record<string, unknown>;
-      if (
-        typeof row.id !== "string" ||
-        (row.role !== "user" &&
-          row.role !== "assistant" &&
-          row.role !== "system") ||
-        typeof row.url !== "string"
-      ) {
-        return null;
-      }
-      return {
-        id: row.id,
-        role: row.role,
-        url: row.url,
-        text: typeof row.text === "string" ? row.text : undefined,
-      };
-    })
-    .filter((v): v is InterviewAudioClip => Boolean(v));
+  const out: InterviewAudioClip[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    if (typeof row.id !== "string" || typeof row.url !== "string") continue;
+    if (
+      row.role !== "user" &&
+      row.role !== "assistant" &&
+      row.role !== "system"
+    ) {
+      continue;
+    }
+    out.push({
+      id: row.id,
+      role: row.role,
+      url: row.url,
+      ...(typeof row.text === "string" ? { text: row.text } : {}),
+    });
+  }
+  return out;
 }
 
 async function generateResults(
