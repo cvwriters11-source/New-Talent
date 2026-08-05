@@ -88,7 +88,7 @@ export function HeroSlideshow() {
       })}
 
       <div
-        className="absolute inset-0 z-[2] bg-gradient-to-b from-ink/75 via-ink/55 to-ink/45 sm:bg-gradient-to-r sm:from-ink/80 sm:via-ink/45 sm:to-ink/15"
+        className="absolute inset-0 z-[2] bg-gradient-to-b from-navy/80 via-navy/60 to-navy/50 sm:bg-gradient-to-r sm:from-navy/85 sm:via-navy/50 sm:to-navy/20"
         aria-hidden
       />
 
@@ -112,10 +112,10 @@ export function HeroSlideshow() {
 
           <div className="mt-7 flex w-full flex-col gap-3 sm:mt-9 sm:w-auto sm:flex-row sm:flex-wrap">
             <ButtonLink
-              href="/templates"
+              href="/interview-prep"
               className="w-full px-6 py-3.5 sm:w-auto"
             >
-              View templates
+              Interviw Preps
             </ButtonLink>
             <ButtonLink
               href="/packages"

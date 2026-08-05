@@ -8,6 +8,7 @@ import {
 import type {
   AdminCustomer,
   AdminOrder,
+  AdminWriter,
   OrderStatus,
   SitePopup,
 } from "@/lib/admin/store";
@@ -51,6 +52,15 @@ type OrderRow = {
   assigned_writer: string | null;
 };
 
+type WriterRow = {
+  id: string;
+  name: string;
+  email: string;
+  active: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
 type CustomerRow = {
   id: string;
   name: string;
@@ -60,6 +70,191 @@ type CustomerRow = {
   orders: number;
   created_at: string;
 };
+
+export type InterviewSessionRow = {
+  id: string;
+  first_name: string;
+  surname: string;
+  position: string;
+  phone: string;
+  email: string;
+  interviewer: "lisa" | "clemence" | null;
+  duration_minutes: 15 | 30 | 60 | null;
+  status: "registered" | "in_progress" | "completed";
+  created_at: string;
+  completed_at?: string | null;
+  transcript?: unknown;
+  results?: unknown;
+  overall_score?: number | null;
+  audio_clips?: unknown;
+};
+
+export type AdminInterviewSession = {
+  id: string;
+  firstName: string;
+  surname: string;
+  position: string;
+  phone: string;
+  email: string;
+  interviewer: "lisa" | "clemence" | null;
+  durationMinutes: 15 | 30 | 60 | null;
+  status: "registered" | "in_progress" | "completed";
+  createdAt: string;
+  completedAt?: string | null;
+  overallScore?: number | null;
+  transcript: { id: string; role: string; content: string }[];
+  results: {
+    overallScore: number;
+    summary: string;
+    strengths: string[];
+    improvements: string[];
+    corrections: {
+      question: string;
+      candidateAnswer: string;
+      whatWorked: string;
+      betterAnswer: string;
+    }[];
+    closingAdvice: string;
+  } | null;
+  audioClips: { id: string; role: string; url: string; text?: string }[];
+};
+
+function asTranscript(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      if (
+        typeof row.id !== "string" ||
+        typeof row.role !== "string" ||
+        typeof row.content !== "string"
+      ) {
+        return null;
+      }
+      return { id: row.id, role: row.role, content: row.content };
+    })
+    .filter((v): v is { id: string; role: string; content: string } =>
+      Boolean(v),
+    );
+}
+
+function asAudioClips(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const row = item as Record<string, unknown>;
+      if (
+        typeof row.id !== "string" ||
+        typeof row.role !== "string" ||
+        typeof row.url !== "string"
+      ) {
+        return null;
+      }
+      return {
+        id: row.id,
+        role: row.role,
+        url: row.url,
+        text: typeof row.text === "string" ? row.text : undefined,
+      };
+    })
+    .filter(
+      (
+        v,
+      ): v is { id: string; role: string; url: string; text?: string } =>
+        Boolean(v),
+    );
+}
+
+function asResults(value: unknown): AdminInterviewSession["results"] {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  if (
+    typeof row.overallScore !== "number" ||
+    typeof row.summary !== "string" ||
+    !Array.isArray(row.strengths) ||
+    !Array.isArray(row.improvements) ||
+    !Array.isArray(row.corrections)
+  ) {
+    return null;
+  }
+  return {
+    overallScore: row.overallScore,
+    summary: row.summary,
+    strengths: row.strengths.filter((s): s is string => typeof s === "string"),
+    improvements: row.improvements.filter(
+      (s): s is string => typeof s === "string",
+    ),
+    corrections: row.corrections
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const c = item as Record<string, unknown>;
+        if (
+          typeof c.question !== "string" ||
+          typeof c.candidateAnswer !== "string" ||
+          typeof c.whatWorked !== "string" ||
+          typeof c.betterAnswer !== "string"
+        ) {
+          return null;
+        }
+        return {
+          question: c.question,
+          candidateAnswer: c.candidateAnswer,
+          whatWorked: c.whatWorked,
+          betterAnswer: c.betterAnswer,
+        };
+      })
+      .filter(
+        (
+          v,
+        ): v is {
+          question: string;
+          candidateAnswer: string;
+          whatWorked: string;
+          betterAnswer: string;
+        } => Boolean(v),
+      ),
+    closingAdvice:
+      typeof row.closingAdvice === "string"
+        ? row.closingAdvice
+        : "Keep practising.",
+  };
+}
+
+export function mapInterviewSessionRow(
+  row: InterviewSessionRow,
+): AdminInterviewSession {
+  return {
+    id: row.id,
+    firstName: row.first_name,
+    surname: row.surname,
+    position: row.position,
+    phone: row.phone,
+    email: row.email,
+    interviewer: row.interviewer,
+    durationMinutes: row.duration_minutes,
+    status: row.status,
+    createdAt: row.created_at,
+    completedAt: row.completed_at || null,
+    overallScore: row.overall_score ?? null,
+    transcript: asTranscript(row.transcript),
+    results: asResults(row.results),
+    audioClips: asAudioClips(row.audio_clips),
+  };
+}
+
+export function mapWriterRow(row: WriterRow): AdminWriter {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    activeOrders: 0,
+    completed: 0,
+    avgTurnaroundDays: 0,
+    totalRevenue: 0,
+  };
+}
 
 type PopupRow = {
   active: boolean;
@@ -519,18 +714,40 @@ export async function sbAddCheckoutOrder(order: AdminOrder, customer: {
   return { id: result.id, orderNumber: result.order_number };
 }
 
-export async function sbUpdateOrderStatus(id: string, status: OrderStatus) {
+export async function sbUpdateOrder(
+  id: string,
+  patch: {
+    status?: OrderStatus;
+    assignedWriter?: string | null;
+    cvUrl?: string | null;
+    pictureUrl?: string | null;
+  },
+) {
+  const setWriter = Object.prototype.hasOwnProperty.call(patch, "assignedWriter");
+  const setCv = Object.prototype.hasOwnProperty.call(patch, "cvUrl");
+  const setPicture = Object.prototype.hasOwnProperty.call(patch, "pictureUrl");
+
   if (isSupabaseAdminConfigured()) {
     const client = createAdminClient();
-    const patch: Record<string, unknown> = { status };
-    if (status === "completed") {
-      patch.completed_at = new Date().toISOString();
-    } else {
-      patch.completed_at = null;
+    const update: Record<string, unknown> = {};
+    if (patch.status) {
+      update.status = patch.status;
+      update.completed_at =
+        patch.status === "completed" ? new Date().toISOString() : null;
     }
+    if (setWriter) {
+      update.assigned_writer = patch.assignedWriter || null;
+    }
+    if (setCv) {
+      update.cv_url = patch.cvUrl || null;
+    }
+    if (setPicture) {
+      update.picture_url = patch.pictureUrl || null;
+    }
+    if (Object.keys(update).length === 0) return undefined;
     const { data, error } = await client
       .from("tc_orders")
-      .update(patch)
+      .update(update)
       .eq("id", id)
       .select("*")
       .maybeSingle();
@@ -542,12 +759,307 @@ export async function sbUpdateOrderStatus(id: string, status: OrderStatus) {
   const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
   if (!isSupabaseConfigured() || !writeKey) return null;
   const client = createAnonClient();
-  const { data, error } = await client.rpc("tc_update_order_status", {
+  const { data, error } = await client.rpc("tc_update_order", {
     p_id: id,
-    p_status: status,
     write_key: writeKey,
+    p_status: patch.status || null,
+    p_assigned_writer: setWriter ? patch.assignedWriter || "" : null,
+    p_set_writer: setWriter,
+    p_cv_url: setCv ? patch.cvUrl || "" : null,
+    p_set_cv: setCv,
+    p_picture_url: setPicture ? patch.pictureUrl || "" : null,
+    p_set_picture: setPicture,
   });
   if (error) throw new Error(error.message);
   if (!data) return undefined;
   return mapOrderRow(data as OrderRow);
+}
+
+export async function sbUpdateOrderStatus(id: string, status: OrderStatus) {
+  return sbUpdateOrder(id, { status });
+}
+
+export async function sbListWriters() {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_writers")
+      .select("*")
+      .order("name", { ascending: true });
+    if (error) {
+      console.warn("[supabase] list writers failed", error.message);
+      return null;
+    }
+    return (data as WriterRow[]).map(mapWriterRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_list_writers", {
+    write_key: writeKey,
+  });
+  if (error) {
+    console.warn("[supabase] list writers rpc failed", error.message);
+    return null;
+  }
+  return (data as WriterRow[]).map(mapWriterRow);
+}
+
+export async function sbUpsertWriter(writer: {
+  id?: string;
+  name: string;
+  email: string;
+}) {
+  const payload = {
+    id: writer.id || `w_${Date.now()}`,
+    name: writer.name.trim(),
+    email: writer.email.trim().toLowerCase(),
+    active: true,
+  };
+
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_writers")
+      .upsert({
+        id: payload.id,
+        name: payload.name,
+        email: payload.email,
+        active: true,
+        updated_at: new Date().toISOString(),
+      })
+      .select("*")
+      .single();
+    if (error) throw new Error(error.message);
+    return mapWriterRow(data as WriterRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_upsert_writer", {
+    payload,
+    write_key: writeKey,
+  });
+  if (error) throw new Error(error.message);
+  return mapWriterRow(data as WriterRow);
+}
+
+export async function sbDeleteWriter(id: string) {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { error, count } = await client
+      .from("tc_writers")
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    return (count || 0) > 0;
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_delete_writer", {
+    p_id: id,
+    write_key: writeKey,
+  });
+  if (error) throw new Error(error.message);
+  return Boolean(data);
+}
+
+export async function sbRegisterInterviewSession(payload: {
+  firstName: string;
+  surname: string;
+  position: string;
+  phone: string;
+  email: string;
+}) {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_interview_sessions")
+      .insert({
+        first_name: payload.firstName.trim(),
+        surname: payload.surname.trim(),
+        position: payload.position.trim(),
+        phone: payload.phone.trim(),
+        email: payload.email.trim().toLowerCase(),
+        status: "registered",
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    return { id: data.id as string };
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_register_interview_session", {
+    payload: {
+      first_name: payload.firstName.trim(),
+      surname: payload.surname.trim(),
+      position: payload.position.trim(),
+      phone: payload.phone.trim(),
+      email: payload.email.trim().toLowerCase(),
+      status: "registered",
+    },
+    write_key: writeKey,
+  });
+  if (error) {
+    console.warn("[supabase] register interview session failed", error.message);
+    return null;
+  }
+  const result = data as { id?: string } | null;
+  if (!result?.id) return null;
+  return { id: result.id };
+}
+
+export async function sbUpdateInterviewSession(
+  id: string,
+  patch: {
+    status?: "registered" | "in_progress" | "completed";
+    interviewer?: "lisa" | "clemence" | null;
+    durationMinutes?: 15 | 30 | 60 | null;
+  },
+) {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const update: Record<string, unknown> = {};
+    if (patch.status) update.status = patch.status;
+    if (Object.prototype.hasOwnProperty.call(patch, "interviewer")) {
+      update.interviewer = patch.interviewer;
+    }
+    if (Object.prototype.hasOwnProperty.call(patch, "durationMinutes")) {
+      update.duration_minutes = patch.durationMinutes;
+    }
+    if (Object.keys(update).length === 0) return undefined;
+    const { data, error } = await client
+      .from("tc_interview_sessions")
+      .update(update)
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return undefined;
+    return mapInterviewSessionRow(data as InterviewSessionRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_update_interview_session", {
+    p_id: id,
+    write_key: writeKey,
+    p_status: patch.status || null,
+    p_interviewer: patch.interviewer || null,
+    p_duration_minutes: patch.durationMinutes ?? null,
+  });
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapInterviewSessionRow(data as InterviewSessionRow);
+}
+
+export async function sbCompleteInterviewSession(
+  id: string,
+  payload: {
+    transcript: unknown;
+    results: unknown;
+    overallScore: number;
+    audioClips: unknown;
+  },
+) {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_interview_sessions")
+      .update({
+        status: "completed",
+        transcript: payload.transcript,
+        results: payload.results,
+        overall_score: payload.overallScore,
+        audio_clips: payload.audioClips,
+        completed_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select("*")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return undefined;
+    return mapInterviewSessionRow(data as InterviewSessionRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_complete_interview_session", {
+    p_id: id,
+    write_key: writeKey,
+    p_transcript: payload.transcript,
+    p_results: payload.results,
+    p_overall_score: payload.overallScore,
+    p_audio_clips: payload.audioClips,
+  });
+  if (error) throw new Error(error.message);
+  if (!data) return undefined;
+  return mapInterviewSessionRow(data as InterviewSessionRow);
+}
+
+export async function sbGetInterviewSession(id: string) {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_interview_sessions")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    return mapInterviewSessionRow(data as InterviewSessionRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_get_interview_session", {
+    p_id: id,
+    write_key: writeKey,
+  });
+  if (error) {
+    console.warn("[supabase] get interview session failed", error.message);
+    return null;
+  }
+  if (!data) return null;
+  return mapInterviewSessionRow(data as InterviewSessionRow);
+}
+
+export async function sbListInterviewSessions() {
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_interview_sessions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.warn("[supabase] list interview sessions failed", error.message);
+      return null;
+    }
+    return (data as InterviewSessionRow[]).map(mapInterviewSessionRow);
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_list_interview_sessions", {
+    write_key: writeKey,
+  });
+  if (error) {
+    console.warn(
+      "[supabase] list interview sessions rpc failed",
+      error.message,
+    );
+    return null;
+  }
+  return (data as InterviewSessionRow[]).map(mapInterviewSessionRow);
 }

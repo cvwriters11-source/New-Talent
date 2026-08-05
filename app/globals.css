@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  /* Canadian palette: maple red accent, navy ink, snow backgrounds */
-  --ink: #0b1f3a;
-  --ink-soft: #1a3358;
-  --paper: #ffffff;
-  --paper-deep: #eef2f7;
-  --teal: #c8102e;
-  --teal-bright: #e11d48;
-  --teal-muted: #c8102e14;
-  --cream: #f5f8fc;
-  --muted: #4a5b73;
-  --line: #d7e0ea;
+  /* Dark tech palette — deep navy surfaces, electric blue accents */
+  --navy: #010b13;
+  --ink: #e6f1ff;
+  --ink-soft: #ccd6f6;
+  --paper: #112240;
+  --paper-deep: #0a192f;
+  --teal: #00a3ff;
+  --teal-bright: #00d4ff;
+  --teal-muted: #00a3ff1a;
+  --cream: #020c1b;
+  --muted: #8892b0;
+  --line: #233554;
   --white: #ffffff;
-  --danger: #b91c1c;
+  --danger: #ff6b6b;
   --maple: #c8102e;
-  --navy: #0b1f3a;
-  --snow: #f5f8fc;
+  --snow: #0a192f;
   --background: var(--cream);
   --foreground: var(--ink);
 }
@@ -44,8 +44,9 @@
 
 body {
   background:
-    radial-gradient(ellipse 120% 80% at 100% -20%, #c8102e12, transparent 50%),
-    radial-gradient(ellipse 90% 60% at -10% 100%, #0b1f3a0a, transparent 45%),
+    radial-gradient(ellipse 100% 60% at 50% -10%, #00a3ff18, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 100% 50%, #0052cc14, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, #00d4ff0a, transparent 45%),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-manrope), system-ui, sans-serif;
@@ -58,6 +59,22 @@ h3,
   font-family: var(--font-manrope), system-ui, sans-serif;
   letter-spacing: -0.02em;
   font-weight: 700;
+}
+
+@keyframes interview-live-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.interview-live-serif {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: 400;
+  letter-spacing: -0.02em;
 }
 
 @keyframes fade-up {
@@ -104,25 +121,30 @@ h3,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--teal);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0052cc 0%, #00a3ff 55%, #00d4ff 100%);
   color: #fff;
   font-weight: 600;
   min-height: 2.75rem;
+  box-shadow: 0 4px 20px #00a3ff33;
   transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+    filter 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: var(--teal-bright);
+  filter: brightness(1.08);
+  box-shadow: 0 6px 28px #00a3ff44;
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(11, 31, 58, 0.18);
-  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #00a3ff55;
+  background: transparent;
   color: var(--ink);
   font-weight: 600;
   min-height: 2.75rem;
@@ -133,9 +155,9 @@ h3,
 }
 
 .btn-secondary:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: #fff;
+  border-color: var(--teal-bright);
+  background: #00a3ff14;
+  color: var(--teal-bright);
 }
 
 .section-label {
@@ -143,49 +165,90 @@ h3,
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--teal);
+  color: var(--teal-bright);
 }
 
 .maple-divider {
   height: 3px;
   width: 3rem;
-  background: linear-gradient(90deg, var(--maple), transparent);
+  background: linear-gradient(90deg, var(--teal), transparent);
 }
 
-@keyframes canada-flag-wave {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 12px 40px rgba(200, 16, 46, 0.18);
+.glass-card {
+  border: 1px solid #ffffff12;
+  background: #0a192f99;
+  backdrop-filter: blur(12px);
+}
+
+@keyframes logo-wheel-roll {
+  0% {
+    transform: rotate(0deg) translateX(-6px);
   }
   50% {
-    transform: scale(1.02);
-    box-shadow: 0 16px 48px rgba(200, 16, 46, 0.28);
+    transform: rotate(180deg) translateX(6px);
+  }
+  100% {
+    transform: rotate(360deg) translateX(-6px);
   }
 }
 
-@keyframes canada-maple-pulse {
-  0%,
-  100% {
+.logo-wheel-roll {
+  animation: logo-wheel-roll 1.1s linear infinite;
+  transform-origin: center center;
+}
+
+.logo-wheel-roll--slow {
+  animation-duration: 2.4s;
+}
+
+.logo-wheel-track::after {
+  content: "";
+  position: absolute;
+  bottom: 0.35rem;
+  left: 50%;
+  width: 4.5rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(0, 163, 255, 0.18);
+  transform: translateX(-50%);
+  filter: blur(1px);
+}
+
+.welcome-splash {
+  opacity: 1;
+  transition: opacity 0.55s ease;
+}
+
+.welcome-splash--hide {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes welcome-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
     opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.72;
-    transform: scale(0.94);
+    transform: translateY(0);
   }
 }
 
-.canada-flag-loader {
-  animation: canada-flag-wave 1.6s ease-in-out infinite;
-}
-
-.canada-maple-pulse {
-  animation: canada-maple-pulse 1.2s ease-in-out infinite;
-  transform-origin: center;
+.welcome-splash-text {
+  animation: welcome-fade-in 0.55s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .logo-wheel-roll,
+  .logo-wheel-roll--slow {
+    animation: none;
+  }
+
+  .welcome-splash-text {
+    animation: none;
+  }
+
   .animate-fade-up,
   .animate-fade-in,
   .canada-flag-loader,

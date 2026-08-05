@@ -47,8 +47,8 @@ export function Header() {
                 href={link.href}
                 className={
                   active
-                    ? "text-ink"
-                    : "text-ink/75 transition hover:text-ink"
+                    ? "text-navy"
+                    : "text-navy/70 transition hover:text-navy"
                 }
               >
                 {link.label}
@@ -67,7 +67,7 @@ export function Header() {
 
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center border border-line text-ink lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center border border-line text-navy lg:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -99,7 +99,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   className={`rounded-sm px-2 py-3 text-base font-semibold ${
-                    active ? "bg-cream text-ink" : "text-ink/80"
+                    active ? "bg-slate-100 text-teal" : "text-navy/80"
                   }`}
                   onClick={() => setOpen(false)}
                 >

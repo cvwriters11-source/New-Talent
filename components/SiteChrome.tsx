@@ -5,6 +5,7 @@ import { DeferredCanadaChat } from "@/components/DeferredCanadaChat";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { SiteAnnouncementPopup } from "@/components/SiteAnnouncementPopup";
+import { WelcomeSplash } from "@/components/WelcomeSplash";
 
 export function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <WelcomeSplash />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

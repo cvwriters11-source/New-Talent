@@ -1,5 +1,5 @@
-import { CanadianFlagLoader } from "@/components/CanadianFlagLoader";
+import { LogoWheelLoader } from "@/components/LogoWheelLoader";
 
 export default function Loading() {
-  return <CanadianFlagLoader />;
+  return <LogoWheelLoader />;
 }

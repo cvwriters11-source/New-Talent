@@ -8,14 +8,19 @@ import {
 import {
   sbAddCheckoutOrder,
   sbDeletePackage,
+  sbDeleteWriter,
   sbGetPackage,
   sbGetPopup,
   sbListCustomers,
+  sbListInterviewSessions,
   sbListOrders,
   sbListPackages,
-  sbUpdateOrderStatus,
+  sbListWriters,
+  sbUpdateOrder,
   sbUpdatePopup,
   sbUpsertPackage,
+  sbUpsertWriter,
+  type AdminInterviewSession,
 } from "@/lib/admin/supabase-data";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 
@@ -122,6 +127,8 @@ export type AdminPromotion = {
   expiresAt: string;
 };
 
+export type { AdminInterviewSession };
+
 export type SitePopup = {
   active: boolean;
   title: string;
@@ -143,6 +150,7 @@ export type AdminStore = {
   plans: AdminPlan[];
   reviews: AdminReview[];
   promotions: AdminPromotion[];
+  interviewSessions: AdminInterviewSession[];
   packages: CareerPackage[];
   popup: SitePopup;
   notifications: number;
@@ -205,6 +213,7 @@ function seedStore(): AdminStore {
     ],
     reviews: [],
     promotions: [],
+    interviewSessions: [],
     packages: structuredClone(defaultPackages),
     popup: defaultPopup(),
     notifications: 0,
@@ -267,6 +276,12 @@ function ensurePopup(store: AdminStore) {
   };
 }
 
+function ensureInterviewSessions(store: AdminStore) {
+  if (!Array.isArray(store.interviewSessions)) {
+    store.interviewSessions = [];
+  }
+}
+
 declare global {
   var __tcAdminStore: AdminStore | undefined;
 }
@@ -293,17 +308,24 @@ export async function getStore(): Promise<AdminStore> {
   if (globalThis.__tcAdminStore) {
     ensurePackages(globalThis.__tcAdminStore);
     ensurePopup(globalThis.__tcAdminStore);
+    ensureInterviewSessions(globalThis.__tcAdminStore);
     if (isSupabaseConfigured()) {
-      const [orders, customers, packages, popup] = await Promise.all([
+      const [orders, customers, packages, popup, writers, interviewSessions] =
+        await Promise.all([
         sbListOrders(),
         sbListCustomers(),
         sbListPackages(true),
         sbGetPopup(),
+        sbListWriters(),
+        sbListInterviewSessions(),
       ]);
       if (orders) globalThis.__tcAdminStore.orders = orders;
       if (customers) globalThis.__tcAdminStore.customers = customers;
       if (packages) globalThis.__tcAdminStore.packages = packages;
       if (popup) globalThis.__tcAdminStore.popup = popup;
+      if (writers && writers.length > 0) globalThis.__tcAdminStore.writers = writers;
+      if (interviewSessions)
+        globalThis.__tcAdminStore.interviewSessions = interviewSessions;
     }
     globalThis.__tcAdminStore.notifications = getAccurateNotificationCount(
       globalThis.__tcAdminStore,
@@ -327,18 +349,24 @@ export async function getStore(): Promise<AdminStore> {
   }
   ensurePackages(store);
   ensurePopup(store);
+  ensureInterviewSessions(store);
 
   if (isSupabaseConfigured()) {
-    const [orders, customers, packages, popup] = await Promise.all([
+    const [orders, customers, packages, popup, writers, interviewSessions] =
+      await Promise.all([
       sbListOrders(),
       sbListCustomers(),
       sbListPackages(true),
       sbGetPopup(),
+      sbListWriters(),
+      sbListInterviewSessions(),
     ]);
     if (orders) store.orders = orders;
     if (customers) store.customers = customers;
     if (packages) store.packages = packages;
     if (popup) store.popup = popup;
+    if (writers && writers.length > 0) store.writers = writers;
+    if (interviewSessions) store.interviewSessions = interviewSessions;
   }
 
   store.notifications = getAccurateNotificationCount(store);
@@ -594,8 +622,27 @@ export async function addCheckoutOrder(input: {
   return order;
 }
 
+export async function getOrderById(id: string) {
+  const store = await getStore();
+  return (
+    store.orders.find((o) => o.id === id || o.orderNumber === id) || null
+  );
+}
+
 export async function updateOrderStatus(id: string, status: OrderStatus) {
-  const fromSb = await sbUpdateOrderStatus(id, status);
+  return updateOrder(id, { status });
+}
+
+export async function updateOrder(
+  id: string,
+  patch: {
+    status?: OrderStatus;
+    assignedWriter?: string | null;
+    cvUrl?: string | null;
+    pictureUrl?: string | null;
+  },
+) {
+  const fromSb = await sbUpdateOrder(id, patch);
   if (fromSb) {
     if (globalThis.__tcAdminStore) {
       const idx = globalThis.__tcAdminStore.orders.findIndex((o) => o.id === id);
@@ -616,15 +663,110 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
   const store = await getStore();
   const order = store.orders.find((o) => o.id === id);
   if (!order) return null;
-  order.status = status;
-  if (status === "completed") {
-    order.completedAt = new Date().toISOString();
-  } else {
-    order.completedAt = null;
+  if (patch.status) {
+    order.status = patch.status;
+    if (patch.status === "completed") {
+      order.completedAt = new Date().toISOString();
+    } else {
+      order.completedAt = null;
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "assignedWriter")) {
+    order.assignedWriter = patch.assignedWriter || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "cvUrl")) {
+    order.cvUrl = patch.cvUrl || null;
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, "pictureUrl")) {
+    order.pictureUrl = patch.pictureUrl || null;
   }
   store.notifications = store.orders.filter((o) => o.status === "pending").length;
   await saveStore(store);
   return order;
+}
+
+export async function listWriters() {
+  const store = await getStore();
+  return getWriterPerformance(store);
+}
+
+export async function upsertWriter(input: {
+  id?: string;
+  name: string;
+  email: string;
+}) {
+  const name = input.name.trim();
+  const email = input.email.trim().toLowerCase();
+  if (!name || !email) {
+    throw new Error("Writer name and email are required.");
+  }
+
+  const saved = await sbUpsertWriter({ id: input.id, name, email });
+  if (saved) {
+    const store = await getStore();
+    const idx = store.writers.findIndex((w) => w.id === saved.id);
+    if (idx >= 0) store.writers[idx] = { ...store.writers[idx], ...saved };
+    else store.writers.push(saved);
+    globalThis.__tcAdminStore = store;
+    return saved;
+  }
+  if (isSupabaseConfigured()) {
+    throw new Error(
+      "Could not save writer to the database. Check TC_DB_WRITE_KEY / service role.",
+    );
+  }
+
+  const store = await getStore();
+  if (input.id) {
+    const existing = store.writers.find((w) => w.id === input.id);
+    if (!existing) throw new Error("Writer not found.");
+    existing.name = name;
+    existing.email = email;
+    await saveStore(store);
+    return existing;
+  }
+
+  const writer: AdminWriter = {
+    id: `w_${Date.now()}`,
+    name,
+    email,
+    activeOrders: 0,
+    completed: 0,
+    avgTurnaroundDays: 0,
+    totalRevenue: 0,
+  };
+  store.writers.push(writer);
+  await saveStore(store);
+  return writer;
+}
+
+export async function deleteWriter(id: string) {
+  const store = await getStore();
+  const writer = store.writers.find((w) => w.id === id);
+  if (!writer) return false;
+
+  const deleted = await sbDeleteWriter(id);
+  if (deleted) {
+    store.writers = store.writers.filter((w) => w.id !== id);
+    for (const order of store.orders) {
+      if (order.assignedWriter === writer.name) order.assignedWriter = null;
+    }
+    globalThis.__tcAdminStore = store;
+    return true;
+  }
+  if (deleted === false) return false;
+  if (isSupabaseConfigured()) {
+    throw new Error(
+      "Could not delete writer in the database. Check TC_DB_WRITE_KEY / service role.",
+    );
+  }
+
+  store.writers = store.writers.filter((w) => w.id !== id);
+  for (const order of store.orders) {
+    if (order.assignedWriter === writer.name) order.assignedWriter = null;
+  }
+  await saveStore(store);
+  return true;
 }
 
 function isCompletedRevenue(order: AdminOrder) {
