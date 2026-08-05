@@ -139,32 +139,30 @@ function asTranscript(value: unknown) {
     );
 }
 
-function asAudioClips(value: unknown) {
+function asAudioClips(
+  value: unknown,
+): { id: string; role: string; url: string; text?: string }[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const row = item as Record<string, unknown>;
-      if (
-        typeof row.id !== "string" ||
-        typeof row.role !== "string" ||
-        typeof row.url !== "string"
-      ) {
-        return null;
-      }
-      return {
-        id: row.id,
-        role: row.role,
-        url: row.url,
-        text: typeof row.text === "string" ? row.text : undefined,
-      };
-    })
-    .filter(
-      (
-        v,
-      ): v is { id: string; role: string; url: string; text?: string } =>
-        Boolean(v),
-    );
+  const out: { id: string; role: string; url: string; text?: string }[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    if (
+      typeof row.id !== "string" ||
+      typeof row.role !== "string" ||
+      typeof row.url !== "string"
+    ) {
+      continue;
+    }
+    const clip: { id: string; role: string; url: string; text?: string } = {
+      id: row.id,
+      role: row.role,
+      url: row.url,
+    };
+    if (typeof row.text === "string") clip.text = row.text;
+    out.push(clip);
+  }
+  return out;
 }
 
 function asResults(value: unknown): AdminInterviewSession["results"] {
