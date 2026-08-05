@@ -15,14 +15,36 @@ export default async function Page() {
       <p className="mt-1 text-sm text-muted">
         Approve listings before they appear on the public Jobs board.
       </p>
-      <div className="mt-6 overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="mt-6 overflow-hidden rounded-xl border border-line bg-paper shadow-sm">
         {jobs.length === 0 ? (
           <p className="px-4 py-10 text-center text-sm text-muted">
             No job posts yet.
           </p>
         ) : (
-          <table className="min-w-full text-left text-sm">
-            <thead className="bg-[#f8fafc] text-xs uppercase text-muted">
+          <>
+            <div className="space-y-3 p-4 md:hidden">
+              {jobs.map((j) => (
+                <article
+                  key={j.id}
+                  className="rounded-lg border border-line bg-paper-deep p-4"
+                >
+                  <p className="font-semibold text-ink">{j.title}</p>
+                  <p className="mt-1 text-sm">{j.companyName}</p>
+                  <p className="text-xs text-muted">{j.location}</p>
+                  <p className="mt-2 text-xs text-muted">
+                    {j.recruiterName || "—"} · {j.recruiterEmail || j.contactEmail}
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                    <JobStatusBadge status={j.status} />
+                    <AdminJobActions jobId={j.id} currentStatus={j.status} />
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="min-w-full text-left text-sm">
+            <thead className="bg-paper-deep text-xs uppercase text-muted">
               <tr>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Company</th>
@@ -52,6 +74,8 @@ export default async function Page() {
               ))}
             </tbody>
           </table>
+            </div>
+          </>
         )}
       </div>
     </div>

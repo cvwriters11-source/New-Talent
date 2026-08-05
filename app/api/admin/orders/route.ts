@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin/auth";
-import { updateOrderStatus, type OrderStatus } from "@/lib/admin/store";
+import { updateOrder, type OrderStatus } from "@/lib/admin/store";
 
 const statuses: OrderStatus[] = [
   "pending",
@@ -15,19 +15,40 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: { id?: string; status?: string };
+  let body: {
+    id?: string;
+    status?: string;
+    assignedWriter?: string | null;
+  };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  if (!body.id || !body.status || !statuses.includes(body.status as OrderStatus)) {
-    return NextResponse.json({ error: "Invalid order update." }, { status: 400 });
+  if (!body.id) {
+    return NextResponse.json({ error: "Order id is required." }, { status: 400 });
+  }
+
+  const hasStatus = typeof body.status === "string";
+  const hasWriter = Object.prototype.hasOwnProperty.call(body, "assignedWriter");
+  if (!hasStatus && !hasWriter) {
+    return NextResponse.json(
+      { error: "Provide a status and/or assignedWriter." },
+      { status: 400 },
+    );
+  }
+  if (hasStatus && !statuses.includes(body.status as OrderStatus)) {
+    return NextResponse.json({ error: "Invalid order status." }, { status: 400 });
   }
 
   try {
-    const order = await updateOrderStatus(body.id, body.status as OrderStatus);
+    const order = await updateOrder(body.id, {
+      status: hasStatus ? (body.status as OrderStatus) : undefined,
+      ...(hasWriter
+        ? { assignedWriter: body.assignedWriter?.trim() || null }
+        : {}),
+    });
     if (!order) {
       return NextResponse.json({ error: "Order not found." }, { status: 404 });
     }
@@ -37,9 +58,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json(
       {
         error:
-          err instanceof Error
-            ? err.message
-            : "Could not update order status.",
+          err instanceof Error ? err.message : "Could not update order.",
       },
       { status: 502 },
     );

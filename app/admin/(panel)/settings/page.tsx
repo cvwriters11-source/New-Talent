@@ -10,7 +10,7 @@ export default function Page() {
     <div>
       <h1 className="text-2xl font-bold">Settings</h1>
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-paper p-5 shadow-sm">
           <h2 className="font-bold">Admin account</h2>
           <p className="mt-2 text-sm text-muted">Login email</p>
           <p className="font-semibold">{creds.email}</p>
@@ -19,7 +19,7 @@ export default function Page() {
             variables.
           </p>
         </article>
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-paper p-5 shadow-sm">
           <h2 className="font-bold">Site contact</h2>
           <p className="mt-2 text-sm text-muted">Public contact email</p>
           <p className="font-semibold">{site.email}</p>

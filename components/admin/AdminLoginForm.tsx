@@ -48,7 +48,7 @@ export function AdminLoginForm() {
           required
           autoComplete="username"
           defaultValue="sam@talentcrafters.co.za"
-          className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
+          className="w-full min-h-12 border border-line bg-paper px-3.5 py-3 text-sm outline-none focus:border-teal"
         />
       </div>
       <div>
@@ -61,7 +61,7 @@ export function AdminLoginForm() {
           type="password"
           required
           autoComplete="current-password"
-          className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
+          className="w-full min-h-12 border border-line bg-paper px-3.5 py-3 text-sm outline-none focus:border-teal"
         />
       </div>
       {error ? (

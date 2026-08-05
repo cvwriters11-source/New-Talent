@@ -8,9 +8,9 @@ export default async function Page() {
   return (
     <div>
       <h1 className="text-2xl font-bold">Subscriptions</h1>
-      <div className="mt-6 overflow-hidden rounded-xl border border-line bg-white shadow-sm">
+      <div className="mt-6 overflow-hidden rounded-xl border border-line bg-paper shadow-sm">
         <table className="min-w-full text-left text-sm">
-          <thead className="bg-[#f8fafc] text-xs uppercase text-muted">
+          <thead className="bg-paper-deep text-xs uppercase text-muted">
             <tr>
               <th className="px-4 py-3">Customer</th>
               <th className="px-4 py-3">Plan</th>

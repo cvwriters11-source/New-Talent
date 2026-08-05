@@ -21,6 +21,8 @@ export type Recruiter = {
   name: string;
   email: string;
   company: string;
+  registrationNumber: string | null;
+  website: string | null;
   whatsapp: string | null;
   logoUrl: string | null;
   verificationStatus: VerificationStatus;
@@ -58,6 +60,8 @@ type RecruiterRow = {
   email: string;
   password_hash: string;
   company: string;
+  registration_number: string | null;
+  website: string | null;
   whatsapp: string | null;
   logo_url: string | null;
   verification_status: VerificationStatus;
@@ -100,6 +104,8 @@ function mapRecruiter(row: RecruiterRow): Recruiter {
     name: row.name,
     email: row.email,
     company: row.company,
+    registrationNumber: row.registration_number ?? null,
+    website: row.website ?? null,
     whatsapp: row.whatsapp,
     logoUrl: row.logo_url ?? null,
     verificationStatus: row.verification_status ?? "pending",
@@ -151,9 +157,7 @@ function newId() {
 }
 
 function requireRecruiterPersistence() {
-  if (isSupabaseConfigured() && !isSupabaseAdminConfigured()) {
-    throw new Error("SUPABASE_SERVICE_ROLE_REQUIRED");
-  }
+  // Prefer Supabase when the service role is present; otherwise local JSON is used.
 }
 
 export async function registerRecruiter(input: {
@@ -161,17 +165,23 @@ export async function registerRecruiter(input: {
   email: string;
   password: string;
   company: string;
+  registrationNumber: string;
+  website: string;
   logoUrl: string;
   whatsapp?: string;
 }): Promise<Recruiter> {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
   const company = input.company.trim();
+  const registrationNumber = input.registrationNumber.trim();
+  const website = input.website.trim();
   const whatsapp = input.whatsapp?.trim() || null;
   const logoUrl = input.logoUrl.trim();
   const passwordHash = hashPassword(input.password);
 
   if (!logoUrl) throw new Error("LOGO_REQUIRED");
+  if (!registrationNumber) throw new Error("REGISTRATION_NUMBER_REQUIRED");
+  if (!website) throw new Error("WEBSITE_REQUIRED");
   requireRecruiterPersistence();
 
   if (isSupabaseAdminConfigured()) {
@@ -183,6 +193,8 @@ export async function registerRecruiter(input: {
         email,
         password_hash: passwordHash,
         company,
+        registration_number: registrationNumber,
+        website,
         whatsapp,
         logo_url: logoUrl,
         verification_status: "pending",
@@ -206,6 +218,8 @@ export async function registerRecruiter(input: {
     email,
     password_hash: passwordHash,
     company,
+    registration_number: registrationNumber,
+    website,
     whatsapp,
     logo_url: logoUrl,
     verification_status: "pending",

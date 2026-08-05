@@ -1,8 +1,8 @@
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
 import { addCheckoutOrder } from "@/lib/admin/store";
+import { uploadPublicFile } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
@@ -50,16 +50,6 @@ function normalizeWhatsapp(countryCode: string, raw: string) {
   const digits = raw.replace(/\D/g, "").replace(/^0+/, "");
   const codeDigits = countryCode.replace(/\D/g, "");
   return `+${codeDigits}${digits}`;
-}
-
-async function uploadIfConfigured(file: File, folder: string) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
-  const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-  const blob = await put(`invoice/${folder}/${Date.now()}-${safeName}`, file, {
-    access: "public",
-    token: process.env.BLOB_READ_WRITE_TOKEN,
-  });
-  return blob.url;
 }
 
 export async function POST(request: Request) {
@@ -125,16 +115,16 @@ export async function POST(request: Request) {
   let cvUrl: string | null = null;
   let pictureUrl: string | null = null;
   try {
-    cvUrl = await uploadIfConfigured(cv, "cv");
-    if (pictureFile) {
-      pictureUrl = await uploadIfConfigured(pictureFile, "pictures");
-    }
+    const [uploadedCv, uploadedPicture] = await Promise.all([
+      uploadPublicFile(cv, "invoice/cv"),
+      pictureFile
+        ? uploadPublicFile(pictureFile, "invoice/pictures")
+        : Promise.resolve(null),
+    ]);
+    cvUrl = uploadedCv;
+    pictureUrl = uploadedPicture;
   } catch (err) {
-    console.error("[invoice-request] Blob upload failed", err);
-    return NextResponse.json(
-      { error: "Could not upload files. Please try again." },
-      { status: 500 },
-    );
+    console.error("[invoice-request] file upload failed", err);
   }
 
   let order;
@@ -172,7 +162,7 @@ export async function POST(request: Request) {
     `Country code: ${data.countryCode}`,
     ``,
     `CV file: ${cv.name} (${Math.round(cv.size / 1024)} KB)`,
-    cvUrl ? `CV URL: ${cvUrl}` : "CV URL: attached / not uploaded to blob",
+    `CV URL: ${cvUrl}`,
     pictureFile
       ? `Picture file: ${pictureFile.name} (${Math.round(pictureFile.size / 1024)} KB)`
       : "Picture: not provided",

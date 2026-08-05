@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CheckoutForm } from "@/components/CheckoutForm";
-import { getPackageBySlug, listPackages } from "@/lib/admin/store";
+import { getPackageBySlug } from "@/lib/admin/store";
 import { defaultPackages } from "@/lib/packages";
 
 type Props = {
@@ -12,13 +12,9 @@ type Props = {
 export const dynamicParams = true;
 export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  try {
-    const packages = await listPackages({ includeInactive: true });
-    return packages.map((pkg) => ({ slug: pkg.slug }));
-  } catch {
-    return defaultPackages.map((pkg) => ({ slug: pkg.slug }));
-  }
+export function generateStaticParams() {
+  // Sync only — avoid Supabase during param generation (was multi-minute compiles).
+  return defaultPackages.map((pkg) => ({ slug: pkg.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -33,7 +29,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PackageCheckoutPage({ params }: Props) {
   const { slug } = await params;
-  const pkg = await getPackageBySlug(slug);
+  const pkg =
+    (await getPackageBySlug(slug)) ||
+    defaultPackages.find((p) => p.slug === slug);
   if (!pkg) notFound();
 
   return (

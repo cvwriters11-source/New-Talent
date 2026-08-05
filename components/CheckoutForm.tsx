@@ -6,7 +6,7 @@ import { FormEvent, useMemo, useState } from "react";
 import type { CareerPackage } from "@/lib/packages";
 
 const fieldClass =
-  "w-full min-h-12 border border-line bg-white px-3.5 py-3 text-base text-ink outline-none transition-colors focus:border-teal sm:text-[0.95rem]";
+  "w-full min-h-12 border border-line bg-paper px-3.5 py-3 text-base text-ink outline-none transition-colors focus:border-teal sm:text-[0.95rem]";
 
 const labelClass = "mb-1.5 block text-sm font-semibold text-ink";
 
@@ -45,24 +45,66 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
       data.set("cvColor", selectedColor);
     }
 
+    const submitOnce = async () => {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 90_000);
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          body: data,
+          signal: controller.signal,
+        });
+        let json: { error?: string; orderNumber?: string } = {};
+        try {
+          json = (await res.json()) as {
+            error?: string;
+            orderNumber?: string;
+          };
+        } catch {
+          if (!res.ok) {
+            throw new Error("Could not submit order. Please try again.");
+          }
+        }
+        if (!res.ok) {
+          throw new Error(
+            json.error || "Something went wrong. Please try again.",
+          );
+        }
+        return json;
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    };
+
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        body: data,
-      });
-      const json = (await res.json()) as {
-        error?: string;
-        orderNumber?: string;
-      };
-      if (!res.ok) {
-        throw new Error(json.error || "Something went wrong. Please try again.");
+      let json: { error?: string; orderNumber?: string };
+      try {
+        json = await submitOnce();
+      } catch (firstErr) {
+        const msg =
+          firstErr instanceof Error ? firstErr.message : String(firstErr);
+        // First hit can fail while the API route compiles in local/dev.
+        if (msg === "Failed to fetch" || msg.includes("aborted")) {
+          await new Promise((r) => setTimeout(r, 1200));
+          json = await submitOnce();
+        } else {
+          throw firstErr;
+        }
       }
       const params = new URLSearchParams({ package: pkg.slug });
       if (json.orderNumber) params.set("order", json.orderNumber);
       router.push(`/checkout/thanks?${params.toString()}`);
     } catch (err) {
       setStatus("error");
-      setError(err instanceof Error ? err.message : "Failed to submit order.");
+      const message =
+        err instanceof Error
+          ? err.name === "AbortError"
+            ? "Submit timed out. Please try again — your details were not lost."
+            : err.message === "Failed to fetch"
+              ? "Could not reach the server. Wait a moment and try again."
+              : err.message
+          : "Failed to submit order.";
+      setError(message);
     }
   }
 
@@ -227,7 +269,7 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
                     className={`inline-flex min-h-11 items-center gap-2 border px-3 py-2 text-sm font-semibold transition ${
                       active
                         ? "border-teal bg-teal-muted text-ink"
-                        : "border-line bg-white text-muted"
+                        : "border-line bg-paper text-muted"
                     }`}
                     aria-pressed={active}
                   >
@@ -254,7 +296,7 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
             type="file"
             required
             accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-ink file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white"
+            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-teal file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white"
             onChange={(e) => setCvName(e.target.files?.[0]?.name || "")}
           />
           {cvName ? (
@@ -273,7 +315,7 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
             name="picture"
             type="file"
             accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-ink file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white"
+            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-teal file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white"
             onChange={(e) => setPictureName(e.target.files?.[0]?.name || "")}
           />
           {pictureName ? (

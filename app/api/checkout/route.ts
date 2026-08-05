@@ -1,12 +1,12 @@
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 import { z } from "zod";
 import { addCheckoutOrder, getPackageBySlug } from "@/lib/admin/store";
 import type { CareerPackage } from "@/lib/packages";
 import { site } from "@/lib/site";
+import { uploadPublicFile } from "@/lib/uploads";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 const MAX_CV_BYTES = 8 * 1024 * 1024;
 const MAX_PICTURE_BYTES = 5 * 1024 * 1024;
@@ -63,16 +63,6 @@ function isAllowedPicture(file: File) {
     name.endsWith(".jpeg") ||
     name.endsWith(".png")
   );
-}
-
-async function uploadIfConfigured(file: File, folder: string) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
-  const safeName = file.name.replace(/[^\w.\-]+/g, "_");
-  const blob = await put(`checkout/${folder}/${Date.now()}-${safeName}`, file, {
-    access: "public",
-    token: process.env.BLOB_READ_WRITE_TOKEN,
-  });
-  return blob.url;
 }
 
 export async function POST(request: Request) {
@@ -164,14 +154,24 @@ export async function POST(request: Request) {
   let cvUrl: string | null = null;
   let pictureUrl: string | null = null;
   try {
-    cvUrl = await uploadIfConfigured(cv, "cv");
-    if (pictureFile) {
-      pictureUrl = await uploadIfConfigured(pictureFile, "pictures");
-    }
+    const [uploadedCv, uploadedPicture] = await Promise.all([
+      uploadPublicFile(cv, "checkout/cv"),
+      pictureFile
+        ? uploadPublicFile(pictureFile, "checkout/pictures")
+        : Promise.resolve(null),
+    ]);
+    cvUrl = uploadedCv;
+    pictureUrl = uploadedPicture;
   } catch (err) {
-    console.error("[checkout] Blob upload failed", err);
+    console.error("[checkout] file upload failed", err);
+  }
+
+  if (!cvUrl) {
     return NextResponse.json(
-      { error: "Could not upload files. Please try again." },
+      {
+        error:
+          "Could not store your CV. Please try again, use a smaller PDF, or WhatsApp us.",
+      },
       { status: 502 },
     );
   }
@@ -222,7 +222,7 @@ export async function POST(request: Request) {
     `Terms accepted: yes`,
     ``,
     `CV file: ${cv.name} (${Math.round(cv.size / 1024)} KB)`,
-    cvUrl ? `CV URL: ${cvUrl}` : "CV URL: not uploaded (BLOB_READ_WRITE_TOKEN missing)",
+    `CV URL: ${cvUrl || "(attached or pending upload)"}`,
     pictureFile
       ? `Picture file: ${pictureFile.name} (${Math.round(pictureFile.size / 1024)} KB)`
       : "Picture: not provided",
@@ -246,6 +246,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    const { Resend } = await import("resend");
     const resend = new Resend(apiKey);
     const from =
       process.env.RESEND_FROM_EMAIL || "Talent Crafters <onboarding@resend.dev>";
@@ -264,7 +265,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const { error } = await resend.emails.send({
+    const sendPromise = resend.emails.send({
       from,
       to: [to],
       replyTo: data.email,
@@ -273,8 +274,18 @@ export async function POST(request: Request) {
       attachments: attachments.length ? attachments : undefined,
     });
 
-    if (error) {
-      console.error("[checkout] Resend error", error);
+    const timed = await Promise.race([
+      sendPromise,
+      new Promise<{ error: { message: string } }>((resolve) =>
+        setTimeout(
+          () => resolve({ error: { message: "email send timed out" } }),
+          8_000,
+        ),
+      ),
+    ]);
+
+    if ("error" in timed && timed.error) {
+      console.error("[checkout] Resend error", timed.error);
       return NextResponse.json({
         ok: true,
         emailSent: false,

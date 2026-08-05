@@ -6,7 +6,7 @@ export default function Page() {
   return (
     <div>
       <h1 className="text-2xl font-bold">CV Generator</h1>
-      <div className="mt-6 rounded-xl border border-line bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-xl border border-line bg-paper p-6 shadow-sm">
         <p className="text-sm text-muted">
           Use this workspace to track template-based CV generation for Talent
           Crafters packages. Writers can open the public Templates gallery and

@@ -25,13 +25,13 @@ function StatCard({
   tone: string;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-line bg-paper p-4 shadow-sm sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted sm:text-xs">
             {label}
           </p>
-          <p className="mt-2 text-2xl font-bold text-ink">{value}</p>
+          <p className="mt-2 text-xl font-bold text-ink sm:text-2xl">{value}</p>
           {hint ? <p className="mt-1 text-xs text-amber-600">{hint}</p> : null}
         </div>
         <span
@@ -59,7 +59,7 @@ export default async function AdminDashboardPage() {
             Live totals from real checkout orders — not sample figures.
           </p>
         </div>
-        <div className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white">
+        <div className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-line bg-paper">
           <span aria-hidden>🔔</span>
           {notifications > 0 ? (
             <span className="absolute -right-1 -top-1 rounded-full bg-teal px-1.5 text-[10px] font-bold text-white">
@@ -74,7 +74,7 @@ export default async function AdminDashboardPage() {
         orders appear under Pending and Open pipeline.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Today" value={formatRand(stats.today)} tone="bg-teal" />
         <StatCard
           label="This Week"
@@ -93,7 +93,7 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total Orders"
           value={String(stats.totalOrders)}
@@ -124,20 +124,61 @@ export default async function AdminDashboardPage() {
           label="Open pipeline (quoted)"
           value={formatRand(stats.pipelineQuoted)}
           hint="Pending + in-progress package quotes"
-          tone="bg-ink"
+          tone="bg-navy"
         />
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-line bg-white shadow-sm">
-        <div className="border-b border-line px-5 py-4">
-          <h2 className="text-lg font-bold text-ink">Writer Performance</h2>
+      <div className="mt-8 overflow-hidden rounded-xl border border-line bg-paper shadow-sm">
+        <div className="border-b border-line px-4 py-4 sm:px-5">
+          <h2 className="text-base font-bold text-ink sm:text-lg">Writer Performance</h2>
           <p className="mt-1 text-xs text-muted">
             Calculated from assigned orders in this system.
           </p>
         </div>
-        <div className="overflow-x-auto">
+
+        <div className="space-y-3 p-4 md:hidden">
+          {writers.length === 0 ? (
+            <p className="text-sm text-muted">No writers yet.</p>
+          ) : (
+            writers.map((writer) => (
+              <article
+                key={writer.id}
+                className="rounded-lg border border-line bg-paper-deep p-4"
+              >
+                <p className="font-semibold text-ink">{writer.name}</p>
+                <p className="text-xs text-muted">{writer.email}</p>
+                <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <dt className="text-xs text-muted">Active</dt>
+                    <dd className="font-semibold">{writer.activeOrders}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Completed</dt>
+                    <dd className="font-semibold">{writer.completed}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Turnaround</dt>
+                    <dd>
+                      {writer.avgTurnaroundDays > 0
+                        ? `${writer.avgTurnaroundDays} days`
+                        : "—"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-muted">Revenue</dt>
+                    <dd className="font-semibold text-teal">
+                      {formatRand(writer.totalRevenue)}
+                    </dd>
+                  </div>
+                </dl>
+              </article>
+            ))
+          )}
+        </div>
+
+        <div className="hidden overflow-x-auto md:block">
           <table className="min-w-full text-left text-sm">
-            <thead className="bg-[#f8fafc] text-xs uppercase tracking-wide text-muted">
+            <thead className="bg-paper-deep text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-5 py-3 font-semibold">Writer</th>
                 <th className="px-5 py-3 font-semibold">Active Orders</th>

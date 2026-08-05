@@ -391,15 +391,40 @@ export async function getPackageBySlug(
   slug: string,
   options?: { includeInactive?: boolean },
 ) {
-  const fromSb = await sbGetPackage(slug, Boolean(options?.includeInactive));
-  if (fromSb) return fromSb;
+  try {
+    const fromSb = await Promise.race([
+      sbGetPackage(slug, Boolean(options?.includeInactive)),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3_000)),
+    ]);
+    if (fromSb) return fromSb;
+  } catch {
+    /* fall through to local catalog */
+  }
 
-  const store = await getStore();
-  ensurePackages(store);
-  const pkg = store.packages.find((p) => p.slug === slug);
-  if (!pkg) return undefined;
-  if (!options?.includeInactive && pkg.active === false) return undefined;
-  return pkg;
+  const cached = globalThis.__tcAdminStore?.packages.find((p) => p.slug === slug);
+  if (cached) {
+    if (!options?.includeInactive && cached.active === false) return undefined;
+    return cached;
+  }
+
+  const fromDefault = defaultPackages.find((p) => p.slug === slug);
+  if (fromDefault) {
+    if (!options?.includeInactive && fromDefault.active === false) {
+      return undefined;
+    }
+    return fromDefault;
+  }
+
+  try {
+    const store = await getStore();
+    ensurePackages(store);
+    const pkg = store.packages.find((p) => p.slug === slug);
+    if (!pkg) return undefined;
+    if (!options?.includeInactive && pkg.active === false) return undefined;
+    return pkg;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function upsertPackage(
@@ -544,14 +569,43 @@ export async function addCheckoutOrder(input: {
   cvUrl?: string | null;
   pictureUrl?: string | null;
 }) {
-  const store = await getStore();
-  ensurePackages(store);
-  const pkg =
-    (await sbGetPackage(input.packageSlug, true)) ||
-    store.packages.find((p) => p.slug === input.packageSlug);
+  // Keep checkout fast: resolve package/writer without loading the full admin store.
+  const cached = globalThis.__tcAdminStore;
+  let pkg =
+    cached?.packages.find((p) => p.slug === input.packageSlug) ||
+    defaultPackages.find((p) => p.slug === input.packageSlug);
+  try {
+    const fromSb = await Promise.race([
+      sbGetPackage(input.packageSlug, true),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4_000)),
+    ]);
+    if (fromSb) pkg = fromSb;
+  } catch {
+    /* use local package */
+  }
+
+  let assignedWriter =
+    cached?.writers.find((w) => w.activeOrders >= 0)?.name ||
+    cached?.writers[0]?.name ||
+    null;
+  if (!assignedWriter) {
+    try {
+      const writers = await Promise.race([
+        sbListWriters(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 3_000)),
+      ]);
+      assignedWriter = writers?.[0]?.name || null;
+    } catch {
+      assignedWriter = null;
+    }
+  }
+
   const isInvoice = input.packageSlug === "invoice-request";
   const id = `ord_${Date.now()}`;
   const fallbackNumber = `TC-${String(Date.now()).slice(-5)}`;
+  const catalog = pkg
+    ? [pkg, ...(cached?.packages || defaultPackages)]
+    : cached?.packages || defaultPackages;
   const order: AdminOrder = {
     id,
     orderNumber: fallbackNumber,
@@ -569,14 +623,9 @@ export async function addCheckoutOrder(input: {
     cvColor: input.cvColor,
     cvUrl: input.cvUrl,
     pictureUrl: input.pictureUrl,
-    amount: isInvoice
-      ? 0
-      : packageAmount(
-          input.packageSlug,
-          pkg ? [pkg, ...store.packages] : store.packages,
-        ),
+    amount: isInvoice ? 0 : packageAmount(input.packageSlug, catalog),
     status: "pending",
-    assignedWriter: store.writers[0]?.name || null,
+    assignedWriter,
   };
 
   const savedToSb = await sbAddCheckoutOrder(order, {
@@ -589,12 +638,36 @@ export async function addCheckoutOrder(input: {
   if (savedToSb) {
     order.id = savedToSb.id;
     order.orderNumber = savedToSb.orderNumber;
-  } else if (isSupabaseConfigured()) {
+    if (cached) {
+      cached.orders.unshift(order);
+      const existing = cached.customers.find(
+        (c) => c.email.toLowerCase() === input.email.toLowerCase(),
+      );
+      if (existing) existing.orders += 1;
+      else {
+        cached.customers.unshift({
+          id: `cus_${Date.now()}`,
+          name: `${input.firstName} ${input.surname}`,
+          email: input.email,
+          whatsapp: input.whatsapp,
+          country: input.country,
+          orders: 1,
+          createdAt: order.createdAt,
+        });
+      }
+      cached.notifications = getAccurateNotificationCount(cached);
+    }
+    return order;
+  }
+
+  if (isSupabaseConfigured()) {
     throw new Error(
       "Could not save this order to the database. Please try again or WhatsApp us.",
     );
   }
 
+  const store = await getStore();
+  ensurePackages(store);
   store.orders.unshift(order);
 
   const existing = store.customers.find(
@@ -614,11 +687,8 @@ export async function addCheckoutOrder(input: {
     });
   }
 
-  store.notifications = store.orders.filter((o) => o.status === "pending").length;
-  if (!savedToSb) await saveStore(store);
-  else {
-    globalThis.__tcAdminStore = store;
-  }
+  store.notifications = getAccurateNotificationCount(store);
+  await saveStore(store);
   return order;
 }
 

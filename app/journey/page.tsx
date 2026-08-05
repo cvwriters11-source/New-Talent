@@ -45,7 +45,7 @@ export default function JourneyPage() {
           {steps.map((step, index) => (
             <li
               key={step.title}
-              className="border border-line bg-white p-6 shadow-sm"
+              className="border border-line bg-paper p-6 shadow-sm"
             >
               <span className="text-3xl font-bold text-teal/30">
                 {String(index + 1).padStart(2, "0")}

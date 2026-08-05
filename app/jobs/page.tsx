@@ -31,7 +31,7 @@ export default async function JobsPage() {
 
         <div className="mt-12 space-y-4">
           {jobs.length === 0 ? (
-            <p className="border border-line bg-white px-5 py-12 text-center text-sm text-muted">
+            <p className="border border-line bg-paper px-5 py-12 text-center text-sm text-muted">
               No published roles right now. Check back soon.
             </p>
           ) : (
@@ -39,7 +39,7 @@ export default async function JobsPage() {
               <Link
                 key={job.id}
                 href={`/jobs/${job.id}`}
-                className="block border border-line bg-white px-5 py-5 transition hover:border-teal/40 hover:shadow-sm sm:px-6"
+                className="block border border-line bg-paper px-5 py-5 transition hover:border-teal/40 hover:shadow-sm sm:px-6"
               >
                 <div className="flex items-start gap-4">
                   {job.companyLogoUrl ? (

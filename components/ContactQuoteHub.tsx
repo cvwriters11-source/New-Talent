@@ -107,12 +107,15 @@ function ActionPill({
   action: ContactAction;
   onInvoice: () => void;
 }) {
-  const pillBg = action.tone === "red" ? "bg-[var(--teal)]" : "bg-[var(--ink)]";
+  const pillBg =
+    action.tone === "red"
+      ? "bg-teal text-white"
+      : "bg-paper-deep text-white ring-1 ring-teal/50";
   const iconFirst = action.side === "right";
 
   const label = (
     <span
-      className={`inline-flex h-9 min-w-[6.75rem] items-center justify-center px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-white sm:h-11 sm:min-w-[9rem] sm:px-4 sm:text-[11px] md:h-12 md:min-w-[10.5rem] md:text-xs ${pillBg}`}
+      className={`inline-flex h-9 min-w-[6.75rem] items-center justify-center px-3 text-[10px] font-bold uppercase tracking-[0.12em] sm:h-11 sm:min-w-[9rem] sm:px-4 sm:text-[11px] md:h-12 md:min-w-[10.5rem] md:text-xs ${pillBg}`}
     >
       {action.label}
     </span>
@@ -122,8 +125,8 @@ function ActionPill({
     <span
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-11 sm:w-11 md:h-12 md:w-12 ${
         action.id === "whatsapp"
-          ? "bg-white text-[var(--ink)] ring-2 ring-[var(--ink)]"
-          : "bg-[var(--ink)] text-white"
+          ? "bg-white text-navy ring-2 ring-teal"
+          : "bg-teal text-white"
       }`}
       aria-hidden
     >
@@ -184,8 +187,8 @@ export function ContactQuoteHub() {
   return (
     <div className="relative mx-auto w-full max-w-5xl">
       <div className="flex flex-col items-center text-center">
-        <BrandLogo className="!max-w-none [&_img]:mx-auto [&_img]:h-16 [&_img]:max-w-[7.5rem] sm:[&_img]:h-20 sm:[&_img]:max-w-[9rem] md:[&_img]:h-24 md:[&_img]:max-w-[11rem]" />
-        <h1 className="mt-2 text-xl font-bold uppercase tracking-[0.16em] text-[var(--ink)] sm:mt-3 sm:text-2xl md:text-3xl md:tracking-[0.2em]">
+        <BrandLogo className="!h-24 !w-24 !p-2 sm:!h-28 sm:!w-28 sm:!p-2.5 md:!h-32 md:!w-32" />
+        <h1 className="mt-2 text-xl font-bold uppercase tracking-[0.16em] text-white sm:mt-3 sm:text-2xl md:text-3xl md:tracking-[0.2em]">
           {site.name}
         </h1>
       </div>
@@ -200,30 +203,45 @@ export function ContactQuoteHub() {
           <path
             d="M18 22 H82 M50 22 V34"
             fill="none"
-            stroke="#c5ccd6"
+            stroke="rgba(0,163,255,0.35)"
             strokeWidth="0.45"
           />
-          <path d="M18 50 H34" fill="none" stroke="#c5ccd6" strokeWidth="0.45" />
-          <path d="M66 50 H82" fill="none" stroke="#c5ccd6" strokeWidth="0.45" />
-          <path d="M50 66 V82" fill="none" stroke="#c5ccd6" strokeWidth="0.45" />
+          <path
+            d="M18 50 H34"
+            fill="none"
+            stroke="rgba(0,163,255,0.35)"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M66 50 H82"
+            fill="none"
+            stroke="rgba(0,163,255,0.35)"
+            strokeWidth="0.45"
+          />
+          <path
+            d="M50 66 V82"
+            fill="none"
+            stroke="rgba(0,163,255,0.35)"
+            strokeWidth="0.45"
+          />
         </svg>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-[38%] w-[38%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_12px_40px_rgba(11,31,58,0.1)]">
+        <div className="absolute left-1/2 top-1/2 z-10 flex h-[38%] w-[38%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#061525] shadow-[0_12px_40px_rgba(0,163,255,0.25)]">
           <div
             className="absolute inset-0 rounded-full p-[3px] sm:p-[4px]"
             style={{
               background:
-                "conic-gradient(from 200deg, var(--ink) 0deg 180deg, var(--teal) 180deg 360deg)",
+                "conic-gradient(from 200deg, #0a2540 0deg 180deg, var(--teal) 180deg 360deg)",
             }}
           >
-            <div className="h-full w-full rounded-full bg-white" />
+            <div className="h-full w-full rounded-full bg-[#03101c]" />
           </div>
-          <div className="absolute inset-[10%] rounded-full border border-dashed border-slate-300/80" />
+          <div className="absolute inset-[10%] rounded-full border border-dashed border-teal/40" />
           <div className="relative z-10 px-2 text-center sm:px-3">
-            <p className="text-[clamp(0.85rem,3.4vw,1.65rem)] font-bold uppercase tracking-[0.1em] text-[var(--ink)]">
+            <p className="text-[clamp(0.85rem,3.4vw,1.65rem)] font-bold uppercase tracking-[0.1em] text-white">
               How to
             </p>
-            <p className="mt-0.5 text-[clamp(0.55rem,1.8vw,0.8rem)] font-semibold uppercase tracking-[0.12em] text-slate-500 sm:mt-1">
+            <p className="mt-0.5 text-[clamp(0.55rem,1.8vw,0.8rem)] font-semibold uppercase tracking-[0.12em] text-teal-bright sm:mt-1">
               Request a quote
             </p>
           </div>
@@ -245,7 +263,7 @@ export function ContactQuoteHub() {
         ))}
       </div>
 
-      <p className="mt-4 text-center text-xs text-muted sm:mt-6 sm:text-sm">
+      <p className="mt-4 text-center text-xs text-white/55 sm:mt-6 sm:text-sm">
         {site.email} · {site.location}
       </p>
 

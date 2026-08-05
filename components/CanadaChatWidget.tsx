@@ -158,11 +158,11 @@ export function CanadaChatWidget() {
     <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {open ? (
         <div
-          className="flex h-[min(80vh,680px)] w-[min(100vw-1.25rem,440px)] flex-col overflow-hidden border border-line bg-white shadow-2xl"
+          className="flex h-[min(80vh,680px)] w-[min(100vw-1.25rem,440px)] flex-col overflow-hidden border border-line bg-paper shadow-2xl"
           role="dialog"
           aria-label="Canada relocation chat"
         >
-          <div className="flex items-center gap-3 bg-ink px-4 py-3 text-white">
+          <div className="flex items-center gap-3 bg-navy px-4 py-3 text-white">
             <div className="relative flex h-10 w-10 items-center justify-center bg-white/10">
               <MessageIcon className="h-5 w-5 text-white" />
               <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 border-2 border-ink bg-emerald-400" />
@@ -183,8 +183,8 @@ export function CanadaChatWidget() {
             </button>
           </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto bg-[#f3f6fb] px-3 py-3">
-            <div className="border border-line bg-white px-3 py-2.5 text-xs leading-relaxed text-muted">
+          <div className="flex-1 space-y-3 overflow-y-auto bg-cream px-3 py-3">
+            <div className="border border-line bg-paper px-3 py-2.5 text-xs leading-relaxed text-muted">
               Ask about Express Entry, work/study permits, visitor visas, and
               settling in Canada. General guidance only — verify on{" "}
               <a
@@ -205,7 +205,7 @@ export function CanadaChatWidget() {
                     key={starter}
                     type="button"
                     onClick={() => void ask(starter)}
-                    className="border border-line bg-white px-2.5 py-2 text-left text-xs font-semibold text-ink hover:border-teal"
+                    className="border border-line bg-paper px-2.5 py-2 text-left text-xs font-semibold text-ink hover:border-teal"
                   >
                     {starter}
                   </button>
@@ -220,8 +220,8 @@ export function CanadaChatWidget() {
                   key={message.id}
                   className={`max-w-[88%] whitespace-pre-wrap px-3 py-2.5 text-sm leading-relaxed shadow-sm ${
                     isUser
-                      ? "ml-auto bg-ink text-white"
-                      : "mr-auto border border-line bg-white text-ink"
+                      ? "ml-auto bg-navy text-white"
+                      : "mr-auto border border-line bg-paper text-ink"
                   }`}
                 >
                   {!isUser ? (
@@ -242,7 +242,7 @@ export function CanadaChatWidget() {
                     key={starter}
                     type="button"
                     onClick={() => void ask(starter)}
-                    className="border border-line bg-white px-2.5 py-2 text-left text-xs font-semibold text-ink hover:border-teal"
+                    className="border border-line bg-paper px-2.5 py-2 text-left text-xs font-semibold text-ink hover:border-teal"
                   >
                     {starter}
                   </button>
@@ -264,7 +264,7 @@ export function CanadaChatWidget() {
 
           <form
             onSubmit={onSubmit}
-            className="flex gap-2 border-t border-line bg-white p-3"
+            className="flex gap-2 border-t border-line bg-paper p-3"
           >
             <input
               value={input}
@@ -285,9 +285,9 @@ export function CanadaChatWidget() {
       ) : null}
 
       {!open && previewOpen ? (
-        <div className="w-[min(100vw-1.25rem,360px)] border border-line bg-white p-4 shadow-2xl">
+        <div className="w-[min(100vw-1.25rem,360px)] border border-line bg-paper p-4 shadow-2xl">
           <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-ink text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center bg-navy text-white">
               <MessageIcon className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
@@ -306,7 +306,7 @@ export function CanadaChatWidget() {
                 <button
                   type="button"
                   onClick={dismissPreview}
-                  className="border border-line bg-white px-3 py-2 text-xs font-semibold text-muted"
+                  className="border border-line bg-paper px-3 py-2 text-xs font-semibold text-muted"
                 >
                   Dismiss
                 </button>
@@ -319,7 +319,7 @@ export function CanadaChatWidget() {
       <button
         type="button"
         onClick={() => (open ? setOpen(false) : openChat())}
-        className="relative inline-flex h-16 w-16 items-center justify-center bg-ink text-white shadow-lg transition hover:bg-ink-soft sm:h-[4.5rem] sm:w-[4.5rem]"
+        className="relative inline-flex h-16 w-16 items-center justify-center bg-navy text-white shadow-lg transition hover:bg-navy-soft sm:h-[4.5rem] sm:w-[4.5rem]"
         aria-expanded={open}
         aria-label={open ? "Close Canada help chat" : "Open Canada help chat"}
       >

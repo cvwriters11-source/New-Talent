@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { SitePopup } from "@/lib/admin/store";
 
 const fieldClass =
-  "w-full border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-teal";
+  "w-full border border-line bg-paper px-3 py-2.5 text-sm outline-none focus:border-teal";
 
 export function PopupEditor({ popup }: { popup: SitePopup }) {
   const router = useRouter();
@@ -109,7 +109,7 @@ export function PopupEditor({ popup }: { popup: SitePopup }) {
         onSubmit={onSubmit}
         className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]"
       >
-        <div className="space-y-4 rounded-xl border border-line bg-white p-5 shadow-sm">
+        <div className="space-y-4 rounded-xl border border-line bg-paper p-5 shadow-sm">
           <label className="flex items-center gap-2 text-sm font-semibold">
             <input
               type="checkbox"
@@ -176,12 +176,12 @@ export function PopupEditor({ popup }: { popup: SitePopup }) {
             </div>
 
             {preview ? (
-              <div className="flex items-center gap-4 border border-line bg-[#f8fafc] p-3">
+              <div className="flex items-center gap-4 border border-line bg-paper-deep p-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={preview}
                   alt="Popup preview"
-                  className="h-16 w-16 shrink-0 object-cover border border-line bg-white"
+                  className="h-16 w-16 shrink-0 object-cover border border-line bg-paper"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">
@@ -253,7 +253,7 @@ export function PopupEditor({ popup }: { popup: SitePopup }) {
           </button>
         </div>
 
-        <aside className="h-fit rounded-xl border border-line bg-white p-5 shadow-sm">
+        <aside className="h-fit rounded-xl border border-line bg-paper p-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             Preview
           </p>

@@ -61,7 +61,7 @@ export function SiteAnnouncementPopup() {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/45 p-4"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-navy/60 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="site-popup-title"
@@ -108,7 +108,7 @@ export function SiteAnnouncementPopup() {
           <button
             type="button"
             onClick={dismiss}
-            className="border border-line bg-white px-5 py-2.5 text-sm font-semibold"
+            className="border border-line bg-paper px-5 py-2.5 text-sm font-semibold"
           >
             Close
           </button>

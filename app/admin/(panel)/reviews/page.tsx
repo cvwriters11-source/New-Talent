@@ -12,7 +12,7 @@ export default async function Page() {
         {store.reviews.map((r) => (
           <article
             key={r.id}
-            className="rounded-xl border border-line bg-white p-5 shadow-sm"
+            className="rounded-xl border border-line bg-paper p-5 shadow-sm"
           >
             <p className="font-semibold">{r.customer}</p>
             <p className="mt-1 text-amber-500">{"★".repeat(r.rating)}</p>

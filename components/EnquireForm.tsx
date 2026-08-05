@@ -11,7 +11,7 @@ const packageOptions = [
 ];
 
 const fieldClass =
-  "w-full border border-line bg-white px-3.5 py-3 text-[0.95rem] text-ink outline-none transition-colors focus:border-teal";
+  "w-full border border-line bg-paper px-3.5 py-3 text-[0.95rem] text-ink outline-none transition-colors focus:border-teal";
 
 export function EnquireForm() {
   const searchParams = useSearchParams();
@@ -156,7 +156,7 @@ export function EnquireForm() {
                   className={`flex cursor-pointer items-center gap-3 border px-3 py-2.5 transition ${
                     active
                       ? "border-teal bg-teal-muted"
-                      : "border-line bg-white hover:border-ink/30"
+                      : "border-line bg-paper hover:border-teal/40"
                   }`}
                 >
                   <input

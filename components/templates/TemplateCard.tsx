@@ -65,7 +65,7 @@ export function TemplateCard({ template }: { template: CvTemplate }) {
                 className={`inline-flex items-center gap-2 border px-2.5 py-1.5 text-xs font-semibold transition ${
                   active
                     ? "border-teal bg-teal-muted text-ink"
-                    : "border-line bg-white text-muted hover:border-ink/30"
+                    : "border-line bg-paper text-muted hover:border-teal/40"
                 }`}
                 aria-pressed={active}
               >

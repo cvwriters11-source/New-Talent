@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useId, useState } from "react";
 
 const fieldClass =
-  "w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm text-ink outline-none transition-colors focus:border-teal";
+  "w-full min-h-12 border border-line bg-paper px-3.5 py-3 text-sm text-ink outline-none transition-colors focus:border-teal";
 const labelClass = "mb-1.5 block text-sm font-semibold text-ink";
 
 const DIAL_CODES = [
@@ -86,17 +86,17 @@ export function InvoiceRequestModal({ open, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-5"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-navy/60 p-0 sm:items-center sm:p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       onClick={onClose}
     >
       <div
-        className="max-h-[92svh] w-full max-w-lg overflow-y-auto border border-line bg-white shadow-2xl sm:rounded-sm"
+        className="max-h-[92svh] w-full max-w-lg overflow-y-auto border border-line bg-paper shadow-2xl sm:rounded-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-line bg-white px-5 py-4">
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-line bg-paper px-5 py-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-teal">
               Invoice request
@@ -178,7 +178,7 @@ export function InvoiceRequestModal({ open, onClose }: Props) {
                     name="countryCode"
                     required
                     defaultValue="+27"
-                    className="min-h-12 w-[8.5rem] shrink-0 border border-line bg-white px-2 text-sm outline-none focus:border-teal"
+                    className="min-h-12 w-[8.5rem] shrink-0 border border-line bg-paper px-2 text-sm outline-none focus:border-teal"
                     aria-label="Country code"
                   >
                     {DIAL_CODES.map((d) => (
@@ -215,7 +215,7 @@ export function InvoiceRequestModal({ open, onClose }: Props) {
                   required
                   accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   onChange={(e) => setCvName(e.target.files?.[0]?.name || "")}
-                  className="w-full border border-line bg-white px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-teal file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+                  className="w-full border border-line bg-paper px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-teal file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                 />
                 {cvName ? (
                   <p className="mt-1 text-xs text-muted">Selected: {cvName}</p>
@@ -232,7 +232,7 @@ export function InvoiceRequestModal({ open, onClose }: Props) {
                   type="file"
                   accept="image/jpeg,image/png,.jpg,.jpeg,.png"
                   onChange={(e) => setPictureName(e.target.files?.[0]?.name || "")}
-                  className="w-full border border-line bg-white px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+                  className="w-full border border-line bg-paper px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-teal file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
                 />
                 {pictureName ? (
                   <p className="mt-1 text-xs text-muted">Selected: {pictureName}</p>

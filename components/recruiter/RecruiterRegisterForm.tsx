@@ -55,7 +55,7 @@ export function RecruiterRegisterForm() {
       </div>
       <div>
         <label htmlFor="company" className="mb-1.5 block text-sm font-semibold text-ink">
-          Company
+          Company name
         </label>
         <input
           id="company"
@@ -63,6 +63,38 @@ export function RecruiterRegisterForm() {
           type="text"
           required
           minLength={2}
+          autoComplete="organization"
+          className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="registrationNumber"
+          className="mb-1.5 block text-sm font-semibold text-ink"
+        >
+          Registration number
+        </label>
+        <input
+          id="registrationNumber"
+          name="registrationNumber"
+          type="text"
+          required
+          minLength={2}
+          placeholder="e.g. 2020/123456/07"
+          className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
+        />
+      </div>
+      <div>
+        <label htmlFor="website" className="mb-1.5 block text-sm font-semibold text-ink">
+          Website address
+        </label>
+        <input
+          id="website"
+          name="website"
+          type="text"
+          required
+          placeholder="www.example.com"
+          autoComplete="url"
           className="w-full min-h-12 border border-line bg-white px-3.5 py-3 text-sm outline-none focus:border-teal"
         />
       </div>

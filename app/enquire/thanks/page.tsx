@@ -11,7 +11,7 @@ export default function EnquireThanksPage() {
   return (
     <div className="bg-cream">
       <section className="mx-auto max-w-3xl px-5 py-20 md:px-8 md:py-28">
-        <div className="border border-line bg-white px-8 py-14 shadow-sm md:px-14">
+        <div className="border border-line bg-paper px-8 py-14 shadow-sm md:px-14">
           <SectionHeading
             eyebrow="Thank you"
             title="We’ve received your enquiry."

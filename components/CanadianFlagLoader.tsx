@@ -5,7 +5,7 @@ export function CanadianFlagLoader({
 }) {
   return (
     <div
-      className="flex min-h-[60svh] flex-col items-center justify-center gap-6 bg-[#f5f8fc] px-5"
+      className="flex min-h-[60svh] flex-col items-center justify-center gap-6 bg-cream px-5"
       role="status"
       aria-live="polite"
       aria-label={label}

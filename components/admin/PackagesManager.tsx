@@ -95,7 +95,7 @@ function toForm(pkg: CareerPackage): FormState {
 }
 
 const fieldClass =
-  "w-full border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-teal";
+  "w-full border border-line bg-paper px-3 py-2.5 text-sm outline-none focus:border-teal";
 
 export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
   const router = useRouter();
@@ -229,7 +229,7 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
           <button
             type="button"
             onClick={cancel}
-            className="border border-line bg-white px-4 py-2 text-sm font-semibold"
+            className="border border-line bg-paper px-4 py-2 text-sm font-semibold"
           >
             Cancel
           </button>
@@ -237,7 +237,7 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
 
         <form
           onSubmit={onSubmit}
-          className="mt-6 space-y-4 rounded-xl border border-line bg-white p-5 shadow-sm"
+          className="mt-6 space-y-4 rounded-xl border border-line bg-paper p-5 shadow-sm"
         >
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm">
@@ -276,7 +276,7 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
               <input
                 required
                 readOnly
-                className={`${fieldClass} bg-[#f8fafc]`}
+                className={`${fieldClass} bg-paper-deep`}
                 value={form.priceLabel}
                 title="Auto-updates from Quote amount"
               />
@@ -357,7 +357,7 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
             </label>
           </div>
 
-          <div className="rounded-lg border border-line bg-[#f8fafc] px-4 py-3">
+          <div className="rounded-lg border border-line bg-paper-deep px-4 py-3">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
               Approximate visitor prices for this package
             </p>
@@ -440,7 +440,7 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
             <button
               type="button"
               onClick={cancel}
-              className="border border-line bg-white px-5 py-2.5 text-sm font-semibold"
+              className="border border-line bg-paper px-5 py-2.5 text-sm font-semibold"
             >
               Cancel
             </button>
@@ -478,7 +478,7 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
         {packages.map((pkg) => (
           <article
             key={pkg.slug}
-            className="rounded-xl border border-line bg-white p-5 shadow-sm"
+            className="rounded-xl border border-line bg-paper p-5 shadow-sm"
           >
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
@@ -513,13 +513,13 @@ export function PackagesManager({ packages }: { packages: CareerPackage[] }) {
                 type="button"
                 disabled={busy}
                 onClick={() => startEdit(pkg)}
-                className="border border-line bg-white px-3 py-2 text-sm font-semibold hover:border-teal"
+                className="border border-line bg-paper px-3 py-2 text-sm font-semibold hover:border-teal"
               >
                 Edit
               </button>
               <Link
                 href={`/packages/${pkg.slug}`}
-                className="border border-line bg-white px-3 py-2 text-sm font-semibold text-teal"
+                className="border border-line bg-paper px-3 py-2 text-sm font-semibold text-teal"
               >
                 View public page
               </Link>

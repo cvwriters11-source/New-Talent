@@ -8,7 +8,7 @@ const variants: Record<ButtonVariant, string> = {
   "outline-teal":
     "inline-flex items-center justify-center border border-teal font-semibold text-teal transition hover:bg-teal hover:text-white",
   "on-dark":
-    "inline-flex items-center justify-center border border-white/30 bg-white/10 font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white hover:text-ink",
+    "inline-flex items-center justify-center rounded-[10px] border border-white/30 bg-white/10 font-semibold text-white backdrop-blur-sm transition hover:border-white hover:bg-white hover:text-navy",
 };
 
 export function ButtonLink({

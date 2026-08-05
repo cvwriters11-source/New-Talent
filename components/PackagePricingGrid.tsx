@@ -12,23 +12,23 @@ const PLAN_THEMES: Record<
   { accent: string; header: string; short: string }
 > = {
   "graduate-package": {
-    accent: "#0d9488",
-    header: "#0f766e",
+    accent: "#00d4ff",
+    header: "#0052cc",
     short: "Fresh Graduate — Package",
   },
   "professional-package": {
-    accent: "#c8102e",
-    header: "#a50d25",
+    accent: "#00a3ff",
+    header: "#0066cc",
     short: "Professional Package",
   },
   "executive-package": {
-    accent: "#1d4ed8",
-    header: "#1e3a8a",
+    accent: "#3399ff",
+    header: "#003d99",
     short: "Executive Package",
   },
   "international-resume": {
-    accent: "#5b4b8a",
-    header: "#43386a",
+    accent: "#5b8def",
+    header: "#1a3a6e",
     short: "International Resume",
   },
 };
@@ -36,8 +36,8 @@ const PLAN_THEMES: Record<
 function themeFor(slug: string) {
   return (
     PLAN_THEMES[slug] ?? {
-      accent: "#0b1f3a",
-      header: "#0b1f3a",
+      accent: "#00a3ff",
+      header: "#0a192f",
       short: "PLAN",
     }
   );
@@ -118,10 +118,10 @@ export function PackagePricingGrid({
           return (
             <article
               key={pkg.slug}
-              className={`relative flex flex-col rounded-2xl bg-white shadow-[0_10px_40px_rgba(11,31,58,0.1)] transition duration-300 ${
+              className={`relative flex flex-col rounded-2xl border border-line bg-paper shadow-[0_10px_40px_rgba(0,163,255,0.12)] transition duration-300 ${
                 featured
-                  ? "ring-2 sm:scale-[1.02] xl:-translate-y-3 xl:scale-105"
-                  : "ring-1 ring-black/5"
+                  ? "ring-2 ring-teal/60 sm:scale-[1.02] xl:-translate-y-3 xl:scale-105"
+                  : "ring-1 ring-white/5"
               }`}
               style={
                 featured
@@ -162,7 +162,7 @@ export function PackagePricingGrid({
 
                 {/* Fully visible — not clipped by header overflow */}
                 <div
-                  className="pointer-events-none absolute right-3 z-30 flex h-[5.5rem] w-[5.5rem] flex-col items-center justify-center rounded-full bg-white sm:right-4 sm:h-[6.25rem] sm:w-[6.25rem]"
+                  className="pointer-events-none absolute right-3 z-30 flex h-[5.5rem] w-[5.5rem] flex-col items-center justify-center rounded-full bg-paper-deep sm:right-4 sm:h-[6.25rem] sm:w-[6.25rem]"
                   style={{
                     top: featured ? "3.4rem" : "4.55rem",
                     boxShadow: `0 10px 28px ${theme.accent}40`,
@@ -220,7 +220,9 @@ export function PackagePricingGrid({
                   <Link
                     href={`/packages/${pkg.slug}/checkout`}
                     className="inline-flex w-full items-center justify-center rounded-lg px-4 py-3 text-center text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:brightness-110 active:scale-[0.98]"
-                    style={{ backgroundColor: theme.accent }}
+                    style={{
+                      background: `linear-gradient(135deg, ${theme.header}, ${theme.accent})`,
+                    }}
                   >
                     Order now
                   </Link>

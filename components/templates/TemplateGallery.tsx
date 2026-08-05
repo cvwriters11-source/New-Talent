@@ -23,7 +23,7 @@ export function TemplateGallery({
     <section
       className={
         dark
-          ? "bg-ink px-5 py-20 text-cream md:px-8"
+          ? "bg-navy px-5 py-20 text-cream md:px-8"
           : "bg-cream px-5 py-20 md:px-8"
       }
     >
@@ -67,7 +67,7 @@ export function TemplateGallery({
               href="/templates"
               className={
                 dark
-                  ? "border border-white/25 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition hover:border-white hover:bg-white hover:text-ink"
+                  ? "border border-white/25 bg-transparent px-6 py-3.5 text-sm font-semibold text-white transition hover:border-white hover:bg-white hover:text-navy"
                   : "btn-secondary px-6 py-3.5 text-sm"
               }
             >

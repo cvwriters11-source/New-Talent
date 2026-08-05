@@ -20,7 +20,7 @@ function SocialIcon({ id }: { id: string }) {
 
 export function Footer() {
   return (
-    <footer className="border-t border-line bg-ink text-paper">
+    <footer className="border-t border-line bg-navy text-paper">
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-5 py-12 sm:gap-10 sm:py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr] md:px-8">
         <div className="col-span-2 md:col-span-1">
           <BrandLogo size="footer" />

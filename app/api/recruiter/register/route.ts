@@ -1,12 +1,10 @@
-import { put } from "@vercel/blob";
-import { promises as fs } from "fs";
-import path from "path";
 import { NextResponse } from "next/server";
 import {
   RECRUITER_COOKIE,
   createRecruiterToken,
 } from "@/lib/recruiter/auth";
 import { registerRecruiter } from "@/lib/recruiter/store";
+import { uploadPublicFile } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
@@ -24,28 +22,11 @@ function isAllowedImage(file: File) {
   );
 }
 
-async function saveCompanyLogo(file: File): Promise<string> {
-  const ext =
-    file.name.toLowerCase().match(/\.(jpe?g|png|webp)$/)?.[0] || ".png";
-  const filename = `logo-${Date.now()}${ext}`;
-
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`recruiters/${filename}`, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
-    return blob.url;
-  }
-
-  if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-    throw new Error("BLOB_REQUIRED");
-  }
-
-  const dir = path.join(process.cwd(), "public", "uploads", "recruiters");
-  await fs.mkdir(dir, { recursive: true });
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(dir, filename), buffer);
-  return `/uploads/recruiters/${filename}`;
+function normalizeWebsite(raw: string) {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
 }
 
 export async function POST(request: Request) {
@@ -60,6 +41,10 @@ export async function POST(request: Request) {
   const email = String(form.get("email") || "").trim();
   const password = String(form.get("password") || "");
   const company = String(form.get("company") || "").trim();
+  const registrationNumber = String(
+    form.get("registrationNumber") || "",
+  ).trim();
+  const website = normalizeWebsite(String(form.get("website") || ""));
   const whatsapp = String(form.get("whatsapp") || "").trim();
   const logo = form.get("logo");
 
@@ -76,7 +61,24 @@ export async function POST(request: Request) {
     );
   }
   if (company.length < 2) {
-    return NextResponse.json({ error: "Company is required." }, { status: 400 });
+    return NextResponse.json({ error: "Company name is required." }, { status: 400 });
+  }
+  if (registrationNumber.length < 2) {
+    return NextResponse.json(
+      { error: "Company registration number is required." },
+      { status: 400 },
+    );
+  }
+  try {
+    const parsed = new URL(website);
+    if (!parsed.hostname.includes(".")) {
+      throw new Error("invalid");
+    }
+  } catch {
+    return NextResponse.json(
+      { error: "Enter a valid company website address." },
+      { status: 400 },
+    );
   }
   if (!(logo instanceof File) || logo.size === 0) {
     return NextResponse.json(
@@ -97,16 +99,17 @@ export async function POST(request: Request) {
     );
   }
 
-  let logoUrl: string;
+  let logoUrl: string | null = null;
   try {
-    logoUrl = await saveCompanyLogo(logo);
+    logoUrl = await uploadPublicFile(logo, "recruiters/logos");
   } catch (err) {
     console.error("[recruiter] logo upload failed", err);
-    const message =
-      err instanceof Error && err.message === "BLOB_REQUIRED"
-        ? "Logo upload is not configured. Please contact support."
-        : "Could not upload logo. Try again.";
-    return NextResponse.json({ error: message }, { status: 500 });
+  }
+  if (!logoUrl) {
+    return NextResponse.json(
+      { error: "Could not upload logo. Try again." },
+      { status: 502 },
+    );
   }
 
   try {
@@ -115,6 +118,8 @@ export async function POST(request: Request) {
       email,
       password,
       company,
+      registrationNumber,
+      website,
       logoUrl,
       whatsapp: whatsapp || undefined,
     });
@@ -127,7 +132,8 @@ export async function POST(request: Request) {
     const res = NextResponse.json({
       ok: true,
       recruiter,
-      message: "Account created. An admin will verify your registration before you can post jobs.",
+      message:
+        "Account created. An admin will verify your registration before you can post jobs.",
     });
     res.cookies.set(RECRUITER_COOKIE, token, {
       httpOnly: true,
@@ -142,18 +148,6 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "An account with this email already exists." },
         { status: 409 },
-      );
-    }
-    if (
-      err instanceof Error &&
-      err.message === "SUPABASE_SERVICE_ROLE_REQUIRED"
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Recruiter registration is temporarily unavailable. Please try again later.",
-        },
-        { status: 503 },
       );
     }
     console.error(err);

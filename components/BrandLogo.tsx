@@ -14,24 +14,22 @@ export function BrandLogo({
   const isFooter = size === "footer";
 
   return (
-    <span className={`inline-flex items-center ${className}`}>
+    <span
+      className={`brand-logo-round inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-black/10 bg-black shadow-sm ${
+        isFooter
+          ? "h-16 w-16 p-1.5 sm:h-[4.75rem] sm:w-[4.75rem] sm:p-2"
+          : "h-12 w-12 p-1 sm:h-14 sm:w-14 sm:p-1.5 md:h-16 md:w-16"
+      } ${className}`}
+    >
       <Image
         src="/brand/logo-sm.png"
         alt="Talent Crafters Recruitment"
-        width={isFooter ? 280 : 220}
-        height={isFooter ? 280 : 220}
+        width={isFooter ? 160 : 128}
+        height={isFooter ? 160 : 128}
         priority={priority}
         unoptimized
-        sizes={
-          isFooter
-            ? "(max-width: 640px) 180px, 220px"
-            : "(max-width: 640px) 140px, (max-width: 1024px) 160px, 180px"
-        }
-        className={
-          isFooter
-            ? "h-[5.5rem] w-auto max-w-[11rem] object-contain object-left sm:h-[6.5rem] sm:max-w-[13rem]"
-            : "h-[3.25rem] w-auto max-w-[9rem] object-contain object-left sm:h-[3.75rem] sm:max-w-[10rem] md:h-[4rem] md:max-w-[11rem]"
-        }
+        sizes={isFooter ? "76px" : "64px"}
+        className="h-full w-full object-contain object-center"
       />
     </span>
   );

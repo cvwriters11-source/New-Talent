@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ButtonLink } from "@/components/ButtonLink";
 import { PackageTemplateSection } from "@/components/templates/PackageTemplateSection";
-import { getPackageBySlug, listPackages } from "@/lib/admin/store";
+import { getPackageBySlug } from "@/lib/admin/store";
 import {
   formatLocalizedAmount,
   getGeoPricing,
@@ -18,13 +18,8 @@ type Props = {
 export const dynamicParams = true;
 export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  try {
-    const packages = await listPackages({ includeInactive: true });
-    return packages.map((pkg) => ({ slug: pkg.slug }));
-  } catch {
-    return defaultPackages.map((pkg) => ({ slug: pkg.slug }));
-  }
+export function generateStaticParams() {
+  return defaultPackages.map((pkg) => ({ slug: pkg.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
