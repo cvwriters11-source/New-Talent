@@ -38,7 +38,7 @@ export function InterviewerStep({
               <div className="flex items-center gap-3">
                 <div
                   className={`flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold ${
-                    selected ? "bg-teal text-white" : "bg-paper-deep text-ink"
+                    selected ? "bg-teal text-navy" : "bg-paper-deep text-ink"
                   }`}
                 >
                   {interviewer.name[0]}

@@ -71,7 +71,7 @@ export function AdminSidebar({ email }: { email: string }) {
               href={item.href}
               className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition ${
                 active
-                  ? "bg-teal text-white"
+                  ? "bg-teal text-navy"
                   : "text-white/75 hover:bg-white/10 hover:text-white"
               }`}
             >

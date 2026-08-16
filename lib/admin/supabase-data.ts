@@ -577,6 +577,45 @@ export async function sbListOrders() {
   return (data as OrderRow[]).map(mapOrderRow);
 }
 
+/** Fetch one order by UUID/id or human order number (e.g. TC-01006). */
+export async function sbGetOrder(orderRef: string) {
+  const ref = orderRef.trim();
+  if (!ref) return null;
+
+  if (isSupabaseAdminConfigured()) {
+    const client = createAdminClient();
+    const { data, error } = await client
+      .from("tc_orders")
+      .select("*")
+      .or(`id.eq.${ref},order_number.eq.${ref}`)
+      .maybeSingle();
+    if (error) {
+      console.warn("[supabase] get order failed", error.message);
+      return null;
+    }
+    return data ? mapOrderRow(data as OrderRow) : null;
+  }
+
+  const writeKey = process.env.TC_DB_WRITE_KEY?.trim();
+  if (!isSupabaseConfigured() || !writeKey) return null;
+  const client = createAnonClient();
+  const { data, error } = await client.rpc("tc_get_order", {
+    order_ref: ref,
+    write_key: writeKey,
+  });
+  if (error) {
+    console.warn("[supabase] get order rpc failed", error.message);
+    // Fallback: list and match (older DBs without tc_get_order).
+    const listed = await sbListOrders();
+    return (
+      listed?.find((o) => o.id === ref || o.orderNumber === ref) || null
+    );
+  }
+  const rows = data as OrderRow[] | OrderRow | null;
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  return row ? mapOrderRow(row) : null;
+}
+
 export async function sbListCustomers() {
   if (isSupabaseAdminConfigured()) {
     const client = createAdminClient();

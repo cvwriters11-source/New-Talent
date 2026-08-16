@@ -24,7 +24,7 @@ export function Header() {
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white/95 shadow-sm backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-line bg-navy/95 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:px-5 md:gap-6 md:px-8 md:py-2.5">
         <Link
           href="/"
@@ -47,8 +47,8 @@ export function Header() {
                 href={link.href}
                 className={
                   active
-                    ? "text-navy"
-                    : "text-navy/70 transition hover:text-navy"
+                    ? "text-teal-bright"
+                    : "text-white/80 transition hover:text-teal-bright"
                 }
               >
                 {link.label}
@@ -67,7 +67,7 @@ export function Header() {
 
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center border border-line text-navy lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center border border-line text-white lg:hidden"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -89,7 +89,7 @@ export function Header() {
       </div>
 
       {open && (
-        <div className="max-h-[calc(100svh-4rem)] overflow-y-auto border-t border-line bg-white px-4 py-4 lg:hidden">
+        <div className="max-h-[calc(100svh-4rem)] overflow-y-auto border-t border-line bg-paper-deep px-4 py-4 lg:hidden">
           <nav className="flex flex-col gap-1" aria-label="Mobile">
             {navLinks.map((link) => {
               const active =
@@ -99,7 +99,7 @@ export function Header() {
                   key={link.href}
                   href={link.href}
                   className={`rounded-sm px-2 py-3 text-base font-semibold ${
-                    active ? "bg-slate-100 text-teal" : "text-navy/80"
+                    active ? "bg-teal-muted text-teal-bright" : "text-white/85"
                   }`}
                   onClick={() => setOpen(false)}
                 >

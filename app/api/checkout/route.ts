@@ -133,6 +133,21 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+  if (cv.size < 1024) {
+    return NextResponse.json(
+      { error: "CV file looks empty or incomplete. Please upload a real PDF, DOC, or DOCX." },
+      { status: 400 },
+    );
+  }
+  if (cv.name.toLowerCase().endsWith(".pdf") || cv.type === "application/pdf") {
+    const head = Buffer.from(await cv.slice(0, 5).arrayBuffer()).toString("utf8");
+    if (!head.startsWith("%PDF")) {
+      return NextResponse.json(
+        { error: "CV must be a valid PDF file." },
+        { status: 400 },
+      );
+    }
+  }
 
   let pictureFile: File | null = null;
   if (picture instanceof File && picture.size > 0) {

@@ -12,23 +12,23 @@ const PLAN_THEMES: Record<
   { accent: string; header: string; short: string }
 > = {
   "graduate-package": {
-    accent: "#00d4ff",
-    header: "#0052cc",
+    accent: "#ffe566",
+    header: "#a88620",
     short: "Fresh Graduate — Package",
   },
   "professional-package": {
-    accent: "#00a3ff",
-    header: "#0066cc",
+    accent: "#d4af37",
+    header: "#8a6a12",
     short: "Professional Package",
   },
   "executive-package": {
-    accent: "#3399ff",
-    header: "#003d99",
+    accent: "#f0d060",
+    header: "#6e5510",
     short: "Executive Package",
   },
   "international-resume": {
-    accent: "#5b8def",
-    header: "#1a3a6e",
+    accent: "#e6c24a",
+    header: "#7a5f14",
     short: "International Resume",
   },
 };
@@ -36,8 +36,8 @@ const PLAN_THEMES: Record<
 function themeFor(slug: string) {
   return (
     PLAN_THEMES[slug] ?? {
-      accent: "#00a3ff",
-      header: "#0a192f",
+      accent: "#d4af37",
+      header: "#050b1a",
       short: "PLAN",
     }
   );
@@ -118,7 +118,7 @@ export function PackagePricingGrid({
           return (
             <article
               key={pkg.slug}
-              className={`relative flex flex-col rounded-2xl border border-line bg-paper shadow-[0_10px_40px_rgba(0,163,255,0.12)] transition duration-300 ${
+              className={`relative flex flex-col rounded-2xl border border-line bg-paper shadow-[0_10px_40px_rgba(212,175,55,0.18)] transition duration-300 ${
                 featured
                   ? "ring-2 ring-teal/60 sm:scale-[1.02] xl:-translate-y-3 xl:scale-105"
                   : "ring-1 ring-white/5"

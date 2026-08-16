@@ -3,12 +3,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderDetailActions } from "@/components/admin/OrderDetailActions";
 import { OrderFilesPanel } from "@/components/admin/OrderFilesPanel";
-import { formatRand } from "@/lib/admin/format";
+import { formatAdminDateTime, formatRand } from "@/lib/admin/format";
 import {
   getOrderById,
   getPackageBySlug,
   getStore,
 } from "@/lib/admin/store";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -51,9 +53,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             {order.orderNumber || order.id}
           </h1>
           <p className="mt-1 text-sm text-muted">
-            Created {new Date(order.createdAt).toLocaleString("en-ZA")}
+            Created {formatAdminDateTime(order.createdAt)}
             {order.completedAt
-              ? ` · Completed ${new Date(order.completedAt).toLocaleString("en-ZA")}`
+              ? ` · Completed ${formatAdminDateTime(order.completedAt)}`
               : ""}
           </p>
         </div>
@@ -151,6 +153,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
 
       <OrderFilesPanel
         orderId={order.id}
+        orderNumber={order.orderNumber || order.id}
         cvUrl={order.cvUrl}
         pictureUrl={order.pictureUrl}
         customerName={`${order.firstName} ${order.surname}`}

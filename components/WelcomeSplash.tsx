@@ -55,7 +55,7 @@ export function WelcomeSplash() {
 
   return (
     <div
-      className={`welcome-splash fixed inset-0 z-[100] flex items-center justify-center bg-white px-6 ${
+      className={`welcome-splash fixed inset-0 z-[100] flex items-center justify-center bg-navy px-6 ${
         fading ? "welcome-splash--hide" : ""
       }`}
       role="status"

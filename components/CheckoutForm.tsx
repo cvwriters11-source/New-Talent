@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
+import { PredictiveTextField } from "@/components/PredictiveTextField";
 import type { CareerPackage } from "@/lib/packages";
+import {
+  filterCities,
+  filterCountries,
+} from "@/lib/location-predictions";
 
 const fieldClass =
   "w-full min-h-12 border border-line bg-paper px-3.5 py-3 text-base text-ink outline-none transition-colors focus:border-teal sm:text-[0.95rem]";
@@ -25,12 +30,33 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
   const [summaryOpen, setSummaryOpen] = useState(false);
   const [cvName, setCvName] = useState("");
   const [pictureName, setPictureName] = useState("");
+  const [location, setLocation] = useState("");
+  const [country, setCountry] = useState("");
 
   const colorLabel = useMemo(
     () =>
       pkg.colorOptions?.find((c) => c.id === selectedColor)?.label ||
       selectedColor,
     [pkg.colorOptions, selectedColor],
+  );
+
+  const countryPredictions = useMemo(
+    () =>
+      filterCountries(country).map((name) => ({
+        value: name,
+        label: name,
+      })),
+    [country],
+  );
+
+  const cityPredictions = useMemo(
+    () =>
+      filterCities(location, country).map((item) => ({
+        value: item.city,
+        label: item.city,
+        hint: item.country,
+      })),
+    [location, country],
   );
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -229,30 +255,38 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor="location" className={labelClass}>
-              Location (city)
-            </label>
-            <input
-              id="location"
-              name="location"
-              required
-              autoComplete="address-level2"
-              className={fieldClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="country" className={labelClass}>
-              Country
-            </label>
-            <input
-              id="country"
-              name="country"
-              required
-              autoComplete="country-name"
-              className={fieldClass}
-            />
-          </div>
+          <PredictiveTextField
+            id="location"
+            name="location"
+            label="Location (city)"
+            required
+            autoComplete="address-level2"
+            className={fieldClass}
+            labelClassName={labelClass}
+            value={location}
+            onValueChange={setLocation}
+            onSelectPrediction={(item) => {
+              setLocation(item.value);
+              if (item.hint && !country.trim()) setCountry(item.hint);
+            }}
+            predictions={cityPredictions}
+            placeholder="Start typing a city…"
+            emptyHint="No match yet — type your city name."
+          />
+          <PredictiveTextField
+            id="country"
+            name="country"
+            label="Country"
+            required
+            autoComplete="country-name"
+            className={fieldClass}
+            labelClassName={labelClass}
+            value={country}
+            onValueChange={setCountry}
+            predictions={countryPredictions}
+            placeholder="Start typing a country…"
+            emptyHint="No match yet — type your country name."
+          />
         </div>
 
         {pkg.colorOptions?.length ? (
@@ -296,7 +330,7 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
             type="file"
             required
             accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-teal file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white"
+            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-teal file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-navy"
             onChange={(e) => setCvName(e.target.files?.[0]?.name || "")}
           />
           {cvName ? (
@@ -315,7 +349,7 @@ export function CheckoutForm({ pkg }: { pkg: CareerPackage }) {
             name="picture"
             type="file"
             accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-teal file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white"
+            className="block w-full text-sm text-muted file:mr-3 file:min-h-11 file:border-0 file:bg-teal file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-navy"
             onChange={(e) => setPictureName(e.target.files?.[0]?.name || "")}
           />
           {pictureName ? (

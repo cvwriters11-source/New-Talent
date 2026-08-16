@@ -2,6 +2,10 @@
 
 import type { FormEvent } from "react";
 import type { InterviewSession } from "@/lib/interview/types";
+import {
+  isExecutiveRole,
+  questionsForDuration,
+} from "@/lib/interview/executive-questions";
 
 type CandidateDetailsStepProps = {
   value: Pick<
@@ -28,6 +32,9 @@ export function CandidateDetailsStep({
   busy,
   error,
 }: CandidateDetailsStepProps) {
+  const executive = isExecutiveRole(value.position);
+  const executiveQuestionCount = questionsForDuration(30).length;
+
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const phoneDigits = value.phone.replace(/\D/g, "");
@@ -69,8 +76,15 @@ export function CandidateDetailsStep({
             className="min-h-11 w-full border border-line bg-paper-deep px-3 py-2 text-sm outline-none focus:border-teal"
             value={value.position}
             onChange={(e) => onChange({ position: e.target.value })}
-            placeholder="e.g. Customer Service Representative"
+            placeholder="e.g. Finance Director or Customer Service Representative"
           />
+          {executive ? (
+            <p className="mt-2 rounded-lg border border-teal/30 bg-teal/5 px-3 py-2 text-xs leading-relaxed text-ink">
+              Executive mode: your session will use our senior leadership question
+              bank (up to {executiveQuestionCount} questions in a 30-minute session)
+              with STAR coaching and sample answer feedback.
+            </p>
+          ) : null}
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-semibold text-ink">Phone number</span>

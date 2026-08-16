@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark tech palette — deep navy surfaces, electric blue accents */
-  --navy: #010b13;
-  --ink: #e6f1ff;
-  --ink-soft: #ccd6f6;
-  --paper: #112240;
-  --paper-deep: #0a192f;
-  --teal: #00a3ff;
-  --teal-bright: #00d4ff;
-  --teal-muted: #00a3ff1a;
-  --cream: #020c1b;
-  --muted: #8892b0;
-  --line: #233554;
+  /* Dark navy + shiny metallic gold */
+  --navy: #050b1a;
+  --ink: #ffffff;
+  --ink-soft: #e8ecf4;
+  --paper: #121a2e;
+  --paper-deep: #0b1220;
+  --teal: #d4af37;
+  --teal-bright: #ffe566;
+  --teal-muted: #d4af3726;
+  --gold-deep: #8a6a12;
+  --gold-mid: #d4af37;
+  --gold-shine: #ffe9a0;
+  --gold-highlight: #fff6d0;
+  --cream: #050b1a;
+  --muted: #9aa3b5;
+  --line: #2a3348;
   --white: #ffffff;
   --danger: #ff6b6b;
   --maple: #c8102e;
-  --snow: #0a192f;
+  --snow: #0b1220;
   --background: var(--cream);
   --foreground: var(--ink);
 }
@@ -44,12 +48,40 @@
 
 body {
   background:
-    radial-gradient(ellipse 100% 60% at 50% -10%, #00a3ff18, transparent 55%),
-    radial-gradient(ellipse 80% 50% at 100% 50%, #0052cc14, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 0% 100%, #00d4ff0a, transparent 45%),
+    radial-gradient(ellipse 90% 55% at 72% -8%, #ffe9a028, transparent 55%),
+    radial-gradient(ellipse 55% 40% at 15% 35%, #d4af3718, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 90%, #ffe56614, transparent 45%),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+/* Light form fields keep dark text; dark (paper) fields keep light text */
+input.bg-white:not([type="checkbox"]):not([type="radio"]),
+textarea.bg-white,
+select.bg-white {
+  color: #050b1a;
+}
+
+input.bg-white::placeholder,
+textarea.bg-white::placeholder {
+  color: #6b7280;
+}
+
+input.bg-paper:not([type="checkbox"]):not([type="radio"]),
+textarea.bg-paper,
+select.bg-paper,
+input.bg-paper-deep:not([type="checkbox"]):not([type="radio"]),
+textarea.bg-paper-deep,
+select.bg-paper-deep {
+  color: var(--ink);
+}
+
+input.bg-paper::placeholder,
+textarea.bg-paper::placeholder,
+input.bg-paper-deep::placeholder,
+textarea.bg-paper-deep::placeholder {
+  color: var(--muted);
 }
 
 h1,
@@ -122,11 +154,25 @@ h3,
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  background: linear-gradient(135deg, #0052cc 0%, #00a3ff 55%, #00d4ff 100%);
-  color: #fff;
-  font-weight: 600;
+  border: 1px solid #ffe9a055;
+  background:
+    linear-gradient(
+      145deg,
+      #8a6a12 0%,
+      #c9a227 18%,
+      #f0d060 38%,
+      #fff1b0 50%,
+      #e6c24a 62%,
+      #d4af37 78%,
+      #a88620 100%
+    );
+  color: #050b1a;
+  font-weight: 700;
   min-height: 2.75rem;
-  box-shadow: 0 4px 20px #00a3ff33;
+  box-shadow:
+    0 4px 22px #d4af3740,
+    inset 0 1px 0 #fff8d8aa,
+    inset 0 -1px 0 #8a6a1233;
   transition:
     filter 0.2s ease,
     transform 0.2s ease,
@@ -134,8 +180,11 @@ h3,
 }
 
 .btn-primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 6px 28px #00a3ff44;
+  filter: brightness(1.08) saturate(1.05);
+  box-shadow:
+    0 8px 30px #d4af3755,
+    inset 0 1px 0 #fff8d8cc,
+    inset 0 -1px 0 #8a6a1233;
 }
 
 .btn-secondary {
@@ -143,21 +192,26 @@ h3,
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid #00a3ff55;
-  background: transparent;
-  color: var(--ink);
+  border: 1px solid #d4af3788;
+  background: linear-gradient(180deg, #d4af3714, transparent);
+  color: var(--teal-bright);
   font-weight: 600;
   min-height: 2.75rem;
+  box-shadow: inset 0 1px 0 #ffe9a022;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .btn-secondary:hover {
   border-color: var(--teal-bright);
-  background: #00a3ff14;
-  color: var(--teal-bright);
+  background: linear-gradient(180deg, #d4af3728, #d4af370a);
+  color: var(--gold-highlight);
+  box-shadow:
+    0 0 18px #d4af3728,
+    inset 0 1px 0 #ffe9a044;
 }
 
 .section-label {
@@ -166,17 +220,53 @@ h3,
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--teal-bright);
+  text-shadow: 0 0 18px #d4af3744;
 }
 
 .maple-divider {
   height: 3px;
   width: 3rem;
-  background: linear-gradient(90deg, var(--teal), transparent);
+  background: linear-gradient(
+    90deg,
+    #fff1b0,
+    var(--teal) 45%,
+    transparent
+  );
+}
+
+.text-shiny-gold {
+  background: linear-gradient(
+    115deg,
+    #8a6a12 0%,
+    #d4af37 28%,
+    #fff1b0 48%,
+    #ffe566 58%,
+    #d4af37 78%,
+    #a88620 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px #d4af3733);
+}
+
+.bg-shiny-gold {
+  background:
+    linear-gradient(
+      145deg,
+      #8a6a12 0%,
+      #c9a227 18%,
+      #f0d060 38%,
+      #fff1b0 50%,
+      #e6c24a 62%,
+      #d4af37 78%,
+      #a88620 100%
+    );
 }
 
 .glass-card {
   border: 1px solid #ffffff12;
-  background: #0a192f99;
+  background: #0b1220aa;
   backdrop-filter: blur(12px);
 }
 
@@ -200,7 +290,7 @@ h3,
     radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.12), transparent 45%),
     radial-gradient(circle at 50% 50%, #2a2a2a 0%, #0d0d0d 62%, #1f1f1f 100%);
   box-shadow:
-    0 10px 28px rgba(10, 37, 64, 0.18),
+    0 10px 28px rgba(5, 11, 26, 0.35),
     inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
@@ -262,7 +352,7 @@ h3,
   width: 62%;
   height: 0.4rem;
   border-radius: 999px;
-  background: rgba(10, 37, 64, 0.14);
+  background: rgba(5, 11, 26, 0.35);
   transform: translateX(-50%);
   filter: blur(2px);
 }

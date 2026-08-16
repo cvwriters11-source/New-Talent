@@ -109,7 +109,7 @@ function ActionPill({
 }) {
   const pillBg =
     action.tone === "red"
-      ? "bg-teal text-white"
+      ? "bg-teal text-navy"
       : "bg-paper-deep text-white ring-1 ring-teal/50";
   const iconFirst = action.side === "right";
 
@@ -126,7 +126,7 @@ function ActionPill({
       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full sm:h-11 sm:w-11 md:h-12 md:w-12 ${
         action.id === "whatsapp"
           ? "bg-white text-navy ring-2 ring-teal"
-          : "bg-teal text-white"
+          : "bg-teal text-navy"
       }`}
       aria-hidden
     >
@@ -203,38 +203,38 @@ export function ContactQuoteHub() {
           <path
             d="M18 22 H82 M50 22 V34"
             fill="none"
-            stroke="rgba(0,163,255,0.35)"
+            stroke="rgba(212,175,55,0.45)"
             strokeWidth="0.45"
           />
           <path
             d="M18 50 H34"
             fill="none"
-            stroke="rgba(0,163,255,0.35)"
+            stroke="rgba(212,175,55,0.45)"
             strokeWidth="0.45"
           />
           <path
             d="M66 50 H82"
             fill="none"
-            stroke="rgba(0,163,255,0.35)"
+            stroke="rgba(212,175,55,0.45)"
             strokeWidth="0.45"
           />
           <path
             d="M50 66 V82"
             fill="none"
-            stroke="rgba(0,163,255,0.35)"
+            stroke="rgba(212,175,55,0.45)"
             strokeWidth="0.45"
           />
         </svg>
 
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-[38%] w-[38%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#061525] shadow-[0_12px_40px_rgba(0,163,255,0.25)]">
+        <div className="absolute left-1/2 top-1/2 z-10 flex h-[38%] w-[38%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#061018] shadow-[0_12px_40px_rgba(212,175,55,0.35)]">
           <div
             className="absolute inset-0 rounded-full p-[3px] sm:p-[4px]"
             style={{
               background:
-                "conic-gradient(from 200deg, #0a2540 0deg 180deg, var(--teal) 180deg 360deg)",
+                "conic-gradient(from 200deg, #8a6a12 0deg, #d4af37 90deg, #fff1b0 140deg, #d4af37 220deg, #1a2744 360deg)",
             }}
           >
-            <div className="h-full w-full rounded-full bg-[#03101c]" />
+            <div className="h-full w-full rounded-full bg-[#050b1a]" />
           </div>
           <div className="absolute inset-[10%] rounded-full border border-dashed border-teal/40" />
           <div className="relative z-10 px-2 text-center sm:px-3">

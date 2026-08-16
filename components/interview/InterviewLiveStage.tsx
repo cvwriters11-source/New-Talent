@@ -139,7 +139,7 @@ export function InterviewLiveStage({
 
         <div className="mt-5 flex justify-center">
           <div
-            className={`flex h-[7.5rem] w-[7.5rem] items-center justify-center rounded-full border-[4px] bg-paper shadow-[0_0_24px_rgba(0,163,255,0.12)] ${
+            className={`flex h-[7.5rem] w-[7.5rem] items-center justify-center rounded-full border-[4px] bg-paper shadow-[0_0_24px_rgba(212,175,55,0.2)] ${
               isLowTime
                 ? "border-danger"
                 : isActive

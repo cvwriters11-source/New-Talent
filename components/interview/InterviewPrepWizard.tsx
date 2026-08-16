@@ -172,7 +172,7 @@ export function InterviewPrepWizard() {
                   <div
                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                       active || done
-                        ? "bg-teal text-white"
+                        ? "bg-teal text-navy"
                         : "bg-paper-deep text-muted"
                     }`}
                   >
@@ -195,7 +195,7 @@ export function InterviewPrepWizard() {
       <section
         className={
           isSession
-            ? "min-h-[calc(100svh-4rem)] overflow-hidden border-x border-line bg-cream shadow-[0_0_40px_rgba(0,163,255,0.08)] sm:mx-auto sm:rounded-2xl sm:border"
+            ? "min-h-[calc(100svh-4rem)] overflow-hidden border-x border-line bg-cream shadow-[0_0_40px_rgba(212,175,55,0.16)] sm:mx-auto sm:rounded-2xl sm:border"
             : "mt-6 rounded-xl border border-line bg-paper p-4 shadow-sm sm:p-6"
         }
       >
@@ -226,6 +226,7 @@ export function InterviewPrepWizard() {
           {step === "duration" ? (
             <DurationStep
               value={session.durationMinutes}
+              position={session.position}
               onChange={(durationMinutes) => updateSession({ durationMinutes })}
               onBack={() => setStep("interviewer")}
               onStart={() => void startSession()}

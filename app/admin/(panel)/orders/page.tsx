@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { getStore } from "@/lib/admin/store";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Orders" };
 
 export default async function AdminOrdersPage() {

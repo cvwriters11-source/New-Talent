@@ -9,6 +9,7 @@ import {
   sbAddCheckoutOrder,
   sbDeletePackage,
   sbDeleteWriter,
+  sbGetOrder,
   sbGetPackage,
   sbGetPopup,
   sbListCustomers,
@@ -693,6 +694,18 @@ export async function addCheckoutOrder(input: {
 }
 
 export async function getOrderById(id: string) {
+  const fromSb = await sbGetOrder(id);
+  if (fromSb) {
+    if (globalThis.__tcAdminStore) {
+      const idx = globalThis.__tcAdminStore.orders.findIndex(
+        (o) => o.id === fromSb.id || o.orderNumber === fromSb.orderNumber,
+      );
+      if (idx >= 0) globalThis.__tcAdminStore.orders[idx] = fromSb;
+      else globalThis.__tcAdminStore.orders.unshift(fromSb);
+    }
+    return fromSb;
+  }
+
   const store = await getStore();
   return (
     store.orders.find((o) => o.id === id || o.orderNumber === id) || null

@@ -109,7 +109,7 @@ export function RecruiterRegisterForm() {
           accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
           required
           onChange={(e) => setLogoName(e.target.files?.[0]?.name || "")}
-          className="w-full border border-line bg-white px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-teal file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white"
+          className="w-full border border-line bg-white px-3.5 py-3 text-sm file:mr-3 file:border-0 file:bg-teal file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-navy"
         />
         <p className="mt-1 text-xs text-muted">
           Required. JPG, PNG, or WebP under 2MB. Shown on your job posts.

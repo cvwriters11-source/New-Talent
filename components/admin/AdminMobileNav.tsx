@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { adminNav } from "@/lib/admin/nav";
 
 const mobileNav = adminNav.filter((item) =>
@@ -22,12 +22,10 @@ export function AdminMobileNav({ email }: { email: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [navPath, setNavPath] = useState(pathname);
 
-  if (navPath !== pathname) {
-    setNavPath(pathname);
-    if (open) setOpen(false);
-  }
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -79,7 +77,7 @@ export function AdminMobileNav({ email }: { email: string }) {
                   href={item.href}
                   className={`rounded-md px-3 py-3 text-sm font-semibold ${
                     active
-                      ? "bg-teal text-white"
+                      ? "bg-teal text-navy"
                       : "bg-white/5 text-white/90 hover:bg-white/10"
                   }`}
                 >

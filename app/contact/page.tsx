@@ -15,7 +15,7 @@ export default function ContactPage() {
         aria-hidden
         style={{
           backgroundImage:
-            "radial-gradient(circle at 50% 28%, rgba(0,163,255,0.22), transparent 52%), radial-gradient(circle at 80% 80%, rgba(0,163,255,0.08), transparent 40%)",
+            "radial-gradient(circle at 50% 28%, rgba(255,233,160,0.28), transparent 52%), radial-gradient(circle at 80% 80%, rgba(212,175,55,0.12), transparent 40%)",
         }}
       />
       <section className="relative mx-auto max-w-6xl px-3 py-8 sm:px-5 sm:py-12 md:px-8 md:py-16">

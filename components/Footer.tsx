@@ -20,14 +20,14 @@ function SocialIcon({ id }: { id: string }) {
 
 export function Footer() {
   return (
-    <footer className="border-t border-line bg-navy text-paper">
+    <footer className="border-t border-line bg-navy text-ink">
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-5 py-12 sm:gap-10 sm:py-14 md:grid-cols-[1.5fr_1fr_1fr_1fr] md:px-8">
         <div className="col-span-2 md:col-span-1">
           <BrandLogo size="footer" />
-          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-paper/50">
+          <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/50">
             {site.product}
           </p>
-          <p className="mt-4 max-w-md text-sm leading-relaxed text-paper/70 sm:mt-5">
+          <p className="mt-4 max-w-md text-sm leading-relaxed text-white/70 sm:mt-5">
             {site.tagline} Career packages plus Canada relocation guidance
             grounded in official IRCC information.
           </p>
@@ -38,7 +38,7 @@ export function Footer() {
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-10 w-10 items-center justify-center border border-white/15 text-paper/80 transition hover:border-white hover:text-white"
+                className="inline-flex h-10 w-10 items-center justify-center border border-white/15 text-white/80 transition hover:border-white hover:text-white"
                 aria-label={social.label}
               >
                 <SocialIcon id={social.id.startsWith("linkedin") ? "linkedin" : social.id} />
@@ -51,7 +51,7 @@ export function Footer() {
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-bright">
             Explore
           </p>
-          <ul className="mt-3 space-y-2 text-sm text-paper/80 sm:mt-4">
+          <ul className="mt-3 space-y-2 text-sm text-white/80 sm:mt-4">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <Link href={link.href} className="inline-block py-0.5 hover:text-white">
@@ -71,7 +71,7 @@ export function Footer() {
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-bright">
             Legal
           </p>
-          <ul className="mt-3 space-y-2 text-sm text-paper/80 sm:mt-4">
+          <ul className="mt-3 space-y-2 text-sm text-white/80 sm:mt-4">
             <li>
               <Link href="/terms" className="inline-block py-0.5 hover:text-white">
                 Terms &amp; Conditions
@@ -89,7 +89,7 @@ export function Footer() {
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-bright">
             Contact
           </p>
-          <ul className="mt-3 space-y-2 text-sm text-paper/80 sm:mt-4">
+          <ul className="mt-3 space-y-2 text-sm text-white/80 sm:mt-4">
             <li>
               <a href={`mailto:${site.email}`} className="break-all hover:text-white">
                 {site.email}
@@ -107,7 +107,7 @@ export function Footer() {
                 WhatsApp us
               </a>
             </li>
-            <li className="text-paper/65">{site.location}</li>
+            <li className="text-white/65">{site.location}</li>
           </ul>
         </div>
       </div>
@@ -115,17 +115,17 @@ export function Footer() {
       <div className="border-t border-white/10 px-5 py-5 sm:px-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 sm:flex-row sm:justify-between">
           <div className="text-center sm:text-left">
-            <p className="text-sm font-semibold tracking-wide text-paper/90">
+            <p className="text-sm font-semibold tracking-wide text-white/90">
               {site.signature}
             </p>
-            <p className="mt-2 text-xs leading-relaxed text-paper/45">
+            <p className="mt-2 text-xs leading-relaxed text-white/45">
               © {new Date().getFullYear()} {site.name}. {site.product}. All
               rights reserved.
             </p>
           </div>
           <Link
             href="/admin/login"
-            className="text-[11px] text-paper/35 transition hover:text-paper/60"
+            className="text-[11px] text-white/35 transition hover:text-white/60"
           >
             Admin
           </Link>
