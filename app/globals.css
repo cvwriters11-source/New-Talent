@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Dark navy + shiny metallic gold */
-  --navy: #050b1a;
+  /* Circuit Plus: deep navy + electric cyan */
+  --navy: #050d1f;
   --ink: #ffffff;
-  --ink-soft: #e8ecf4;
-  --paper: #121a2e;
-  --paper-deep: #0b1220;
-  --teal: #d4af37;
-  --teal-bright: #ffe566;
-  --teal-muted: #d4af3726;
-  --gold-deep: #8a6a12;
-  --gold-mid: #d4af37;
-  --gold-shine: #ffe9a0;
-  --gold-highlight: #fff6d0;
-  --cream: #050b1a;
-  --muted: #9aa3b5;
-  --line: #2a3348;
+  --ink-soft: #e6f4ff;
+  --paper: #0b1730;
+  --paper-deep: #07101f;
+  --teal: #00b7ff;
+  --teal-bright: #5ce1ff;
+  --teal-muted: #00b7ff26;
+  --gold-deep: #0077b6;
+  --gold-mid: #00b7ff;
+  --gold-shine: #7ee8ff;
+  --gold-highlight: #c9f3ff;
+  --cream: #050d1f;
+  --muted: #8fa8c4;
+  --line: #1a3a5c;
   --white: #ffffff;
   --danger: #ff6b6b;
   --maple: #c8102e;
-  --snow: #0b1220;
+  --snow: #07101f;
   --background: var(--cream);
   --foreground: var(--ink);
 }
@@ -48,9 +48,9 @@
 
 body {
   background:
-    radial-gradient(ellipse 90% 55% at 72% -8%, #ffe9a028, transparent 55%),
-    radial-gradient(ellipse 55% 40% at 15% 35%, #d4af3718, transparent 50%),
-    radial-gradient(ellipse 60% 40% at 100% 90%, #ffe56614, transparent 45%),
+    radial-gradient(ellipse 90% 55% at 72% -8%, #00b7ff2e, transparent 55%),
+    radial-gradient(ellipse 55% 40% at 15% 35%, #0077b620, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 90%, #5ce1ff18, transparent 45%),
     var(--background);
   color: var(--foreground);
   font-family: var(--font-manrope), system-ui, sans-serif;
@@ -60,7 +60,7 @@ body {
 input.bg-white:not([type="checkbox"]):not([type="radio"]),
 textarea.bg-white,
 select.bg-white {
-  color: #050b1a;
+  color: #050d1f;
 }
 
 input.bg-white::placeholder,
@@ -154,25 +154,24 @@ h3,
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid #ffe9a055;
+  border: 1px solid #5ce1ff66;
   background:
     linear-gradient(
       145deg,
-      #8a6a12 0%,
-      #c9a227 18%,
-      #f0d060 38%,
-      #fff1b0 50%,
-      #e6c24a 62%,
-      #d4af37 78%,
-      #a88620 100%
+      #005f99 0%,
+      #0088cc 18%,
+      #00b7ff 42%,
+      #5ce1ff 55%,
+      #00b7ff 70%,
+      #0077b6 100%
     );
-  color: #050b1a;
+  color: #050d1f;
   font-weight: 700;
   min-height: 2.75rem;
   box-shadow:
-    0 4px 22px #d4af3740,
-    inset 0 1px 0 #fff8d8aa,
-    inset 0 -1px 0 #8a6a1233;
+    0 4px 22px #00b7ff44,
+    inset 0 1px 0 #c9f3ffaa,
+    inset 0 -1px 0 #005f9933;
   transition:
     filter 0.2s ease,
     transform 0.2s ease,
@@ -180,11 +179,11 @@ h3,
 }
 
 .btn-primary:hover {
-  filter: brightness(1.08) saturate(1.05);
+  filter: brightness(1.08) saturate(1.08);
   box-shadow:
-    0 8px 30px #d4af3755,
-    inset 0 1px 0 #fff8d8cc,
-    inset 0 -1px 0 #8a6a1233;
+    0 8px 30px #00b7ff66,
+    inset 0 1px 0 #c9f3ffcc,
+    inset 0 -1px 0 #005f9933;
 }
 
 .btn-secondary {
@@ -192,12 +191,12 @@ h3,
   align-items: center;
   justify-content: center;
   border-radius: 10px;
-  border: 1px solid #d4af3788;
-  background: linear-gradient(180deg, #d4af3714, transparent);
+  border: 1px solid #00b7ff88;
+  background: linear-gradient(180deg, #00b7ff18, transparent);
   color: var(--teal-bright);
   font-weight: 600;
   min-height: 2.75rem;
-  box-shadow: inset 0 1px 0 #ffe9a022;
+  box-shadow: inset 0 1px 0 #5ce1ff22;
   transition:
     border-color 0.2s ease,
     background 0.2s ease,
@@ -207,11 +206,11 @@ h3,
 
 .btn-secondary:hover {
   border-color: var(--teal-bright);
-  background: linear-gradient(180deg, #d4af3728, #d4af370a);
+  background: linear-gradient(180deg, #00b7ff2e, #00b7ff0a);
   color: var(--gold-highlight);
   box-shadow:
-    0 0 18px #d4af3728,
-    inset 0 1px 0 #ffe9a044;
+    0 0 18px #00b7ff33,
+    inset 0 1px 0 #5ce1ff44;
 }
 
 .section-label {
@@ -220,7 +219,7 @@ h3,
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--teal-bright);
-  text-shadow: 0 0 18px #d4af3744;
+  text-shadow: 0 0 18px #00b7ff55;
 }
 
 .maple-divider {
@@ -228,7 +227,7 @@ h3,
   width: 3rem;
   background: linear-gradient(
     90deg,
-    #fff1b0,
+    #7ee8ff,
     var(--teal) 45%,
     transparent
   );
@@ -237,37 +236,37 @@ h3,
 .text-shiny-gold {
   background: linear-gradient(
     115deg,
-    #8a6a12 0%,
-    #d4af37 28%,
-    #fff1b0 48%,
-    #ffe566 58%,
-    #d4af37 78%,
-    #a88620 100%
+    #0077b6 0%,
+    #00b7ff 28%,
+    #7ee8ff 48%,
+    #5ce1ff 58%,
+    #00b7ff 78%,
+    #0088cc 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  filter: drop-shadow(0 0 10px #d4af3733);
+  filter: drop-shadow(0 0 10px #00b7ff44);
 }
 
 .bg-shiny-gold {
   background:
     linear-gradient(
       145deg,
-      #8a6a12 0%,
-      #c9a227 18%,
-      #f0d060 38%,
-      #fff1b0 50%,
-      #e6c24a 62%,
-      #d4af37 78%,
-      #a88620 100%
+      #005f99 0%,
+      #0088cc 18%,
+      #00b7ff 42%,
+      #5ce1ff 55%,
+      #00b7ff 70%,
+      #0077b6 100%
     );
 }
 
 .glass-card {
-  border: 1px solid #ffffff12;
-  background: #0b1220aa;
+  border: 1px solid #00b7ff22;
+  background: #07101fcc;
   backdrop-filter: blur(12px);
+  box-shadow: 0 0 24px #00b7ff14;
 }
 
 @keyframes logo-tyre-spin {
