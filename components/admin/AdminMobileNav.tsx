@@ -13,6 +13,7 @@ const mobileNav = adminNav.filter((item) =>
     "/admin/packages",
     "/admin/recruiters",
     "/admin/job-posts",
+    "/admin/cv-generator",
     "/admin/popup",
     "/admin/settings",
   ].includes(item.href),

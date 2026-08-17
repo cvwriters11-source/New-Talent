@@ -399,3 +399,32 @@ h3,
     animation: none;
   }
 }
+
+/* Keep the fixed A4 preview fully visible at every viewport width. */
+.resume-preview-scale {
+  zoom: 0.48;
+}
+
+@media (min-width: 480px) {
+  .resume-preview-scale {
+    zoom: 0.62;
+  }
+}
+
+@media (min-width: 640px) {
+  .resume-preview-scale {
+    zoom: 0.68;
+  }
+}
+
+@media (min-width: 768px) {
+  .resume-preview-scale {
+    zoom: 0.82;
+  }
+}
+
+@media (min-width: 1024px) {
+  .resume-preview-scale {
+    zoom: 1;
+  }
+}
